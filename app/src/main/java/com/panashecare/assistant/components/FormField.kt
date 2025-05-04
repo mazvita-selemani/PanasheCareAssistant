@@ -1,0 +1,61 @@
+package com.panashecare.assistant.components
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.panashecare.assistant.AppColors
+import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormField(
+    value: String,
+    onChange: (String) -> Unit,
+    modifier: Modifier,
+    label: String,
+    placeholder: String,
+    horizontalPadding: Int = 32
+){
+    OutlinedTextField(
+        value = value,
+        onValueChange = onChange,
+        modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding.dp),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = AppColors().formTextPrimary,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        ),
+        shape = RoundedCornerShape(20.dp),
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        label = { Text(label, color = Color.Black) },
+        singleLine = true
+    )
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewFormField() {
+    PanasheCareAssistantTheme {
+        FormField(
+            value = "",
+            onChange = { },
+            modifier = Modifier,
+            label = "Password",
+            placeholder = "Enter something"
+        )
+    }
+}

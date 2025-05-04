@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "93765261956",
+    "firebase_url": "https://panashe-care-app-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "panashe-care-app",
+    "storage_bucket": "panashe-care-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93765261956:android:adf17b124ff94d387100d1",
+        "android_client_info": {
+          "package_name": "com.panashecare.assistant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "93765261956-qi2pqus5gl1lofmt2pvsb665viou9mua.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.panashecare.assistant",
+            "certificate_hash": "24f761934f5ce7e2121250ca21829393d8a8e503"
+          }
+        },
+        {
+          "client_id": "93765261956-gibcanii5bcafjendqg9rd4at0oks9pk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgYBu3VrGbEKNgbUCLLY30pkRjmorgAhk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "93765261956-gibcanii5bcafjendqg9rd4at0oks9pk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
