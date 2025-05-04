@@ -47,6 +47,7 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.model.objects.Medication
+import com.panashecare.assistant.model.objects.MedicationWithDosage
 import com.panashecare.assistant.model.objects.Prescription
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
@@ -89,25 +90,23 @@ fun SchedulePrescriptionsScreen(
             patientId = "1234",
             morningTime = morningState.time,
             morningMedication = listOf(
-                morningState.prescriptionDetails[firstRow].selectedMedication,
-                morningState.prescriptionDetails[secondRow].selectedMedication
+                MedicationWithDosage(morningState.prescriptionDetails[firstRow].selectedMedication, morningState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(morningState.prescriptionDetails[secondRow].selectedMedication, morningState.prescriptionDetails[secondRow].dosage)
             ),
             afternoonTime = afternoonState.time,
             afternoonMedication = listOf(
-                afternoonState.prescriptionDetails[firstRow].selectedMedication,
-                afternoonState.prescriptionDetails[secondRow].selectedMedication
+                MedicationWithDosage(afternoonState.prescriptionDetails[firstRow].selectedMedication, afternoonState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(afternoonState.prescriptionDetails[secondRow].selectedMedication, afternoonState.prescriptionDetails[secondRow].dosage)
             ),
             eveningTime = eveningState.time,
             eveningMedication = listOf(
-                eveningState.prescriptionDetails[firstRow].selectedMedication,
-               eveningState.prescriptionDetails[secondRow].selectedMedication
+                MedicationWithDosage(eveningState.prescriptionDetails[firstRow].selectedMedication, eveningState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(eveningState.prescriptionDetails[secondRow].selectedMedication, eveningState.prescriptionDetails[secondRow].dosage)
             )
         )
     }
 
-   // Log.d("Panashe List Loaded", "${morningState.prescriptionDetails[0].medicationList}")
-
-    SchedulePrescriptions(
+   SchedulePrescriptions(
         morningState = morningState,
         afternoonState = afternoonState,
         eveningState = eveningState,

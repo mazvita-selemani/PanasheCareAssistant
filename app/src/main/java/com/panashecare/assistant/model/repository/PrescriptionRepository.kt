@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.panashecare.assistant.model.objects.MedicationWithDosage
 import com.panashecare.assistant.model.objects.Prescription
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -16,13 +17,33 @@ class PrescriptionRepository(
     private val database: DatabaseReference = Firebase.database.getReference("prescriptions")
 ) {
 
-    fun getPrescriptionsRealtime(): Flow<PrescriptionResult> = callbackFlow {
+    fun getPrescriptionsRealtime(timeOfDay: String): Flow<PrescriptionResult> = callbackFlow {
         trySend(PrescriptionResult.Loading)
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val prescriptionList = snapshot.children.mapNotNull { it.getValue(Prescription::class.java) }
-                trySend(PrescriptionResult.Success(prescriptionList = prescriptionList))
+
+                if (timeOfDay == "morning") {
+                    val morningPrescriptions = prescriptionList[0].morningMedication
+                    morningPrescriptions?.let { PrescriptionResult.Success(it) }
+                        ?.let { trySend(it) }
+                    return
+                }
+
+                if (timeOfDay == "afternoon") {
+                    val afternoonPrescriptions = prescriptionList[0].afternoonMedication
+                    afternoonPrescriptions?.let { PrescriptionResult.Success(it) }
+                        ?.let { trySend(it) }
+                    return
+                }
+
+                if (timeOfDay == "evening") {
+                    val eveningPrescriptions = prescriptionList[0].eveningMedication
+                    eveningPrescriptions?.let { PrescriptionResult.Success(it) }
+                        ?.let { trySend(it) }
+                    return
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -51,6 +72,6 @@ class PrescriptionRepository(
 
 sealed class PrescriptionResult {
     data object Loading : PrescriptionResult()
-    data class Success(val prescriptionList: List<Prescription> = emptyList()) : PrescriptionResult()
+    data class Success(val prescriptionList: List<MedicationWithDosage> = emptyList()) : PrescriptionResult()
     data class Error(val message: String) : PrescriptionResult()
 }

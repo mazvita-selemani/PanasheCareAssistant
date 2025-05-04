@@ -14,6 +14,7 @@ import com.panashecare.assistant.view.HomeScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
 import com.panashecare.assistant.view.authentication.SignOut
+import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
 import com.panashecare.assistant.view.shiftManagement.CreateNewShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ShiftsOverviewScreen
@@ -48,6 +49,9 @@ object VitalsLog
 
 @Serializable
 object SchedulePrescriptions
+
+@Serializable
+object DailyMedicationTracker
 
 @Composable
 fun AppNavigation(
@@ -124,8 +128,10 @@ fun AppNavigation(
         composable<SchedulePrescriptions> { SchedulePrescriptionsScreen(
             prescriptionRepository = prescriptionRepository,
             medicationRepository = medicationRepository,
-            navigateToDailyMedicationTracker = { }
+            navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker)}
         ) }
+
+        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository) }
 
     }
 }
