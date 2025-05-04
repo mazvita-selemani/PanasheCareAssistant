@@ -84,23 +84,23 @@ fun SchedulePrescriptionsScreen(
 
     var prescription: Prescription? = null
 
-    if (morningState.prescriptionDetails.isNotEmpty() && afternoonState.prescriptionDetails.isNotEmpty() && eveningState.prescriptionDetails.isNotEmpty()) {
+    if (morningState.prescriptionDetails.size ==2 && afternoonState.prescriptionDetails.size ==2 && eveningState.prescriptionDetails.size ==2) {
         prescription = Prescription(
             patientId = "1234",
             morningTime = morningState.time,
             morningMedication = listOf(
                 morningState.prescriptionDetails[firstRow].selectedMedication,
-             //   morningState.prescriptionDetails[secondRow].selectedMedication
+                morningState.prescriptionDetails[secondRow].selectedMedication
             ),
             afternoonTime = afternoonState.time,
             afternoonMedication = listOf(
                 afternoonState.prescriptionDetails[firstRow].selectedMedication,
-               // afternoonState.prescriptionDetails[secondRow].selectedMedication
+                afternoonState.prescriptionDetails[secondRow].selectedMedication
             ),
             eveningTime = eveningState.time,
             eveningMedication = listOf(
                 eveningState.prescriptionDetails[firstRow].selectedMedication,
-           //     eveningState.prescriptionDetails[secondRow].selectedMedication
+               eveningState.prescriptionDetails[secondRow].selectedMedication
             )
         )
     }
