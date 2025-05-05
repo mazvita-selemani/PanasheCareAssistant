@@ -39,9 +39,6 @@ class DailyMedicationTrackerViewModel(
     private val medicationMap = mutableStateOf<Map<String, Medication>>(emptyMap())
     private var medicationList = MutableStateFlow<MedicationResult>(MedicationResult.Loading)
 
-
-
-
     init {
         loadPrescriptionSchedule()
         loadAllMedications()
@@ -75,250 +72,93 @@ class DailyMedicationTrackerViewModel(
 
     fun confirmMedicationIntake(timeOfDay: String) {
         viewModelScope.launch {
-            var log: DailyMedicationLog
-            var logSecond: DailyMedicationLog
             val today = helper.convertDateToString(
-                LocalDate
-                    .now()
-                    .atStartOfDay(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli()
+                LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             )
+            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the begining of call")
 
-            if (timeOfDay == "morning") {
 
-                log = DailyMedicationLog(
-                    date = today,
-                    medicationId = state.prescriptions?.morningMedication?.get(0)?.medication,
-                    wasTaken = state.isMorningFirstChecked,
-                    timeOfDay = TimeOfDay.MORNING.name
+            val (medications, checks) = when (timeOfDay) {
+                "morning" -> state.prescriptions?.morningMedication to listOf(
+                    state.isMorningFirstChecked,
+                    state.isMorningSecondChecked
                 )
 
-                dailyMedicationLogRepository.submitLog(
-                    log = log,
-                ) { success ->
-                    if (success) {
-                        Log.d("Firebase", "Prescription schedule created!")
-
-                    } else {
-                        Log.e("Firebase", "Prescription schedule creation failed.")
-                    }
-                }
-
-                // update medication levels in medication document
-                /*state.prescriptions?.morningMedication?.get(0)?.medication?.let {
-                    medicationRepository.updateMedication(
-                        medicationId = it,
-                        newInventoryLevel = state.prescriptions?.morningMedication?.get(0)?.medication.totalInStock?.minus(1) ?: 0
-                    ){ success ->
-                        if (success) {
-                            Log.d("Firebase", "Inventory Level updated!")
-
-                        } else {
-                            Log.e("Firebase", "Inventory Level update failed.")
-                        }
-                    }
-                }*/
-
-                if ((state.prescriptions?.morningMedication?.size ?: 0) > 1) {
-                    logSecond = DailyMedicationLog(
-                        date = today,
-                        medicationId = state.prescriptions?.morningMedication?.get(1)?.medication,
-                        wasTaken = state.isMorningSecondChecked,
-                        timeOfDay = TimeOfDay.MORNING.name
-                    )
-
-                    dailyMedicationLogRepository.submitLog(
-                        log = logSecond,
-                    ) { success ->
-                        if (success) {
-                            Log.d("Firebase", "Prescription schedule created!")
-
-                        } else {
-                            Log.e("Firebase", "Prescription schedule creation failed.")
-                        }
-                    }
-
-                    /*state.prescriptions?.morningMedication?.get(1)?.medication?.let {
-                        medicationRepository.updateMedication(
-                            medicationId = it,
-                            newInventoryLevel = state.prescriptions?.morningMedication?.get(1)?.medication?.totalInStock?.minus(
-                                1
-                            ) ?: 0
-                        ){ success ->
-                            if (success) {
-                                Log.d("Firebase", "Inventory Level updated!")
-
-                            } else {
-                                Log.e("Firebase", "Inventory Level update failed.")
-                            }
-                        }
-                    }*/
-                }
-
-
-            }
-
-            if (timeOfDay == "afternoon") {
-                log = DailyMedicationLog(
-                    date = today,
-                    medicationId = state.prescriptions?.afternoonMedication?.get(0)?.medication,
-                    wasTaken = state.isAfternoonFirstChecked,
-                    timeOfDay = TimeOfDay.AFTERNOON.name
+                "afternoon" -> state.prescriptions?.afternoonMedication to listOf(
+                    state.isAfternoonFirstChecked,
+                    state.isAfternoonSecondChecked
                 )
-
-                dailyMedicationLogRepository.submitLog(
-                    log = log,
-                ) { success ->
-                    if (success) {
-                        Log.d("Firebase", "Prescription schedule created!")
-
-                    } else {
-                        Log.e("Firebase", "Prescription schedule creation failed.")
-                    }
-                }
-
-                // update medication levels in medication document
-                /*state.prescriptions?.afternoonMedication?.get(0)?.medication?.let {
-                    medicationRepository.updateMedication(
-                        medicationId = it,
-                        newInventoryLevel = state.prescriptions?.afternoonMedication?.get(0)?.medication?.totalInStock?.minus(
-                            1
-                        ) ?: 0
-                    ){ success ->
-                        if (success) {
-                            Log.d("Firebase", "Inventory Level updated!")
-
-                        } else {
-                            Log.e("Firebase", "Inventory Level update failed.")
-                        }
-                    }
-                }*/
-
-                if ((state.prescriptions?.afternoonMedication?.size ?: 0) > 1) {
-                    logSecond = DailyMedicationLog(
-                        date = today,
-                        medicationId = state.prescriptions?.afternoonMedication?.get(1)?.medication,
-                        wasTaken = state.isAfternoonSecondChecked,
-                        timeOfDay = TimeOfDay.AFTERNOON.name
-                    )
-
-                    dailyMedicationLogRepository.submitLog(
-                        log = logSecond,
-                    ) { success ->
-                        if (success) {
-                            Log.d("Firebase", "Prescription schedule created!")
-
-                        } else {
-                            Log.e("Firebase", "Prescription schedule creation failed.")
-                        }
-                    }
-
-                    // update medication levels in medication document
-                    /*state.prescriptions?.afternoonMedication?.get(1)?.medication?.let {
-                        medicationRepository.updateMedication(
-                            medicationId = it,
-                            newInventoryLevel = state.prescriptions?.afternoonMedication?.get(1)?.medication?.totalInStock?.minus(
-                                1
-                            ) ?: 0
-                        ){ success ->
-                            if (success) {
-                                Log.d("Firebase", "Inventory Level updated!")
-
-                            } else {
-                                Log.e("Firebase", "Inventory Level update failed.")
-                            }
-                        }
-                    }*/
-                }
-
-            }
-
-            if (timeOfDay == "evening") {
-                log = DailyMedicationLog(
-                    date = today,
-                    medicationId = state.prescriptions?.eveningMedication?.get(0)?.medication,
-                    wasTaken = state.isEveningFirstChecked,
-                    timeOfDay = TimeOfDay.EVENING.name
+                "evening" -> state.prescriptions?.eveningMedication to listOf(
+                    state.isEveningFirstChecked,
+                    state.isEveningSecondChecked
                 )
-
-                dailyMedicationLogRepository.submitLog(
-                    log = log,
-                ) { success ->
-                    if (success) {
-                        Log.d("Firebase", "Prescription schedule created!")
-
-                    } else {
-                        Log.e("Firebase", "Prescription schedule creation failed.")
-                    }
-                }
-
-                // update medication levels in medication document
-                /*state.prescriptions?.eveningMedication?.get(0)?.medication?.let {
-                    medicationRepository.updateMedication(
-                        medicationId = it,
-                        newInventoryLevel = state.prescriptions?.afternoonMedication?.get(0)?.medication?.totalInStock?.minus(
-                            1
-                        ) ?: 0
-                    ){ success ->
-                        if (success) {
-                            Log.d("Firebase", "Inventory Level updated!")
-
-                        } else {
-                            Log.e("Firebase", "Inventory Level update failed.")
-                        }
-                    }
-                }*/
-
-                if ((state.prescriptions?.eveningMedication?.size ?: 0) > 1) {
-                    logSecond = DailyMedicationLog(
-                        date = today,
-                        medicationId = state.prescriptions?.eveningMedication?.get(1)?.medication,
-                        wasTaken = state.isEveningSecondChecked,
-                        timeOfDay = TimeOfDay.EVENING.name
-                    )
-
-                    dailyMedicationLogRepository.submitLog(
-                        log = logSecond,
-                    ) { success ->
-                        if (success) {
-                            Log.d("Firebase", "Prescription schedule created!")
-
-                        } else {
-                            Log.e("Firebase", "Prescription schedule creation failed.")
-                        }
-                    }
-
-                    // update medication levels in medication document
-                    /*state.prescriptions?.eveningMedication?.get(1)?.medication?.let {
-                        medicationRepository.updateMedication(
-                            medicationId = it,
-                            newInventoryLevel = state.prescriptions?.eveningMedication?.get(1)?.medication?.totalInStock?.minus(
-                                1
-                            ) ?: 0
-                        ){ success ->
-                            if (success) {
-                                Log.d("Firebase", "Inventory Level updated!")
-
-                            } else {
-                                Log.e("Firebase", "Inventory Level update failed.")
-                            }
-                        }
-                    }*/
-                }
-
-
+                else -> null to emptyList()
             }
 
+            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the end of call")
+            Log.d("Panashe stock", "first check is checked variable: ${checks.first()}")
+            Log.d("Panashe stock", "first check is checked variable list: $checks")
 
+
+
+            medications?.forEachIndexed { index, prescriptionItem ->
+                val wasTaken = checks.getOrNull(index) ?: false
+                val medId = prescriptionItem.medication
+                if (medId != null) {
+                    submitLogAndUpdateStock(
+                        medicationId = medId,
+                        wasTaken = wasTaken,
+                        timeOfDay = timeOfDay,
+                        date = today
+                    )
+                }
+            }
+        }
+    }
+
+    private fun submitLogAndUpdateStock(
+        medicationId: String,
+        wasTaken: Boolean,
+        timeOfDay: String,
+        date: String
+    ) {
+        val log = DailyMedicationLog(
+            date = date,
+            medicationId = medicationId,
+            wasTaken = wasTaken,
+            timeOfDay = timeOfDay.uppercase()
+        )
+
+        dailyMedicationLogRepository.submitLog(log) { success ->
+            if (success) {
+                Log.d("Firebase", "Log submitted successfully.")
+            } else {
+                Log.e("Firebase", "Log submission failed.")
+            }
+        }
+
+        if (wasTaken) {
+            val medication = medicationMap.value[medicationId]
+            val newInventory = (medication?.totalInStock ?: 1) - 1
+            medicationRepository.updateMedication(
+                medicationId = medicationId,
+                newInventoryLevel = newInventory
+            ) { success ->
+                if (success) {
+                    Log.d("Firebase", "Inventory updated successfully.")
+                } else {
+                    Log.e("Firebase", "Inventory update failed.")
+                }
+            }
         }
     }
 
 
-
-
     fun updateMorningFirstChecked(isChecked: Boolean) {
         state = state.copy(isMorningFirstChecked = isChecked)
+
+        Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked}")
+
 
     }
 
