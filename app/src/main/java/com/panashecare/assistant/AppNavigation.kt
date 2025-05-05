@@ -2,6 +2,7 @@ package com.panashecare.assistant
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -63,10 +64,9 @@ fun AppNavigation(
     vitalsRepository: VitalsRepository,
     medicationRepository: MedicationRepository,
     prescriptionRepository: PrescriptionRepository,
-    dailyMedicationLogRepository: DailyMedicationLogRepository
+    dailyMedicationLogRepository: DailyMedicationLogRepository,
+    navController: NavHostController
 ) {
-
-    val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
@@ -91,7 +91,8 @@ fun AppNavigation(
                 navigateToProfile = { navController.navigate(SchedulePrescriptions) },
                 repository = shiftRepository,
                 navigateToCreateShift = { navController.navigate(CreateNewShift) },
-                navigateToShiftList = { navController.navigate(ShiftList) }
+                navigateToShiftList = { navController.navigate(ShiftList) },
+                modifier = modifier
             )
         }
 
