@@ -133,7 +133,7 @@ fun AppNavigation(
             navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker)}
         ) }
 
-        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository, dailyMedicationLogRepository, medicationRepository) }
+        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository, dailyMedicationLogRepository, medicationRepository, {}) }
 
     }
 }

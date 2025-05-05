@@ -265,7 +265,7 @@ fun PrescriptionsInput(
         Spacer(modifier = Modifier.height(10.dp))
 
         MedicationRow(
-            time = time, // time
+            time = time,
             dosage = prescriptionDetailState[firstRow].dosage,
             onDosageChange = { newDosage -> onDosageChange(timeOfDay, firstRow, newDosage) },
             isMedicationExpanded = prescriptionDetailState[firstRow].isMedicationExpanded,
@@ -303,9 +303,6 @@ fun PrescriptionsInput(
             },
             textFieldColors = textFieldColors
         )
-
-        Log.d("Panashe new row", "$isSecondRowVisible")
-
 
         if (isSecondRowVisible && prescriptionDetailState.size > 1) {
             Log.d("Panashe new row", "Content should be showing")

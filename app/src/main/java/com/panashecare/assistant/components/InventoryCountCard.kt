@@ -41,10 +41,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panashecare.assistant.R
+import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
 @Composable
-fun InventoryCountCard(modifier: Modifier = Modifier) {
+fun InventoryCountCard(modifier: Modifier = Modifier, medication: Medication) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -54,7 +55,7 @@ fun InventoryCountCard(modifier: Modifier = Modifier) {
         // Card
         Row(
             modifier = Modifier
-                .padding(25.dp)
+                .padding(15.dp)
                 .fillMaxWidth()
                 .height(120.dp) // Reduce the actual card height
                 .background(color = Color(0xFFE7F7FA), shape = RoundedCornerShape(18.dp))
@@ -95,14 +96,14 @@ fun InventoryCountCard(modifier: Modifier = Modifier) {
             // Right Column
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "Nurofen",
+                    text = "${medication.name}",
                     style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight(500))
                 )
 
                 Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
-                    text = "35",
+                    text = "${medication.totalInStock}",
                     style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight(500))
                 )
             }
@@ -113,19 +114,19 @@ fun InventoryCountCard(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 25.dp, bottom = 10.dp)
-                .offset(y = 20.dp), // Hang it *outside* the card
+                .offset(y = 10.dp), // Hang it *outside* the card
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Button(
                 onClick = {},
                 modifier = Modifier
-                    .width(73.dp)
-                    .height(27.dp),
+                    .width(100.dp)
+                    .height(35.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Gray,
                     contentColor = Color.White
                 ),
-                contentPadding = PaddingValues(10.dp)
+                contentPadding = PaddingValues(5.dp)
             ) {
                 Text(text = "Edit")
             }
@@ -133,13 +134,13 @@ fun InventoryCountCard(modifier: Modifier = Modifier) {
             Button(
                 onClick = {},
                 modifier = Modifier
-                    .width(105.dp)
-                    .height(45.dp),
+                    .width(100.dp)
+                    .height(35.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Gray,
                     contentColor = Color.White
                 ),
-                contentPadding = PaddingValues(12.dp)
+                contentPadding = PaddingValues(5.dp)
             ) {
                 Text(text = "Delete")
             }
@@ -152,6 +153,6 @@ fun InventoryCountCard(modifier: Modifier = Modifier) {
 @Composable
 fun PreviewInventoryCountCard(){
     PanasheCareAssistantTheme {
-        InventoryCountCard()
+       // InventoryCountCard()
     }
 }
