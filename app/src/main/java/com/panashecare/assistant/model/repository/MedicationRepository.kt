@@ -35,6 +35,22 @@ class MedicationRepository(
         awaitClose { database.removeEventListener(listener) }
     }
 
+    fun getAllMedications(): Flow<List<Medication>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val medicationList = snapshot.children.mapNotNull { it.getValue(Medication::class.java) }
+                trySend(medicationList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+
+        database.addValueEventListener(listener)
+        awaitClose { database.removeEventListener(listener) }
+    }
+
     fun createMedication(medication: Medication, onComplete: (Boolean) -> Unit) {
         Log.d("Register", "About to create Medication")
         val medicationId = database.push().key
@@ -48,6 +64,32 @@ class MedicationRepository(
     }
 
     // todo update and delete functions
+
+    // update inventory for this medication
+    fun updateMedication(medicationId: String, newInventoryLevel: Int, onComplete: (Boolean) -> Unit) {
+        Log.d("Stock", "MedicationId: $medicationId")
+        Log.d("Stock", "Total In stock: $newInventoryLevel")
+        database.child(medicationId).child("totalInStock").setValue(newInventoryLevel)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+    fun getMedicationById(medicationId: String): Flow<Medication?> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val medicationList = snapshot.children.mapNotNull { it.getValue(Medication::class.java) }
+                trySend(medicationList.find { it.id == medicationId })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+
+        database.addValueEventListener(listener)
+        awaitClose { database.removeEventListener(listener) }
+    }
 }
 
 sealed class MedicationResult {

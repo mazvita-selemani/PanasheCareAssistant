@@ -1,7 +1,7 @@
 package com.panashecare.assistant.model.objects
 
 
-data class MedicationWithDosage(val medication: Medication? = null, val dosage: Int? = null)
+data class MedicationWithDosage(val medication: String? = null, val dosage: Int? = null)
 
 data class Prescription(
     var id: String? = null,

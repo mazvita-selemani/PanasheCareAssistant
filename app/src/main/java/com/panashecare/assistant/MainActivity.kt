@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.ShiftRepository
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         val vitalsRepository by lazy { VitalsRepository() }
         val medicationRepository by lazy { MedicationRepository() }
         val prescriptionRepository by lazy { PrescriptionRepository() }
+        val dailyMedicationLogRepository by lazy { DailyMedicationLogRepository()}
         setContent {
             PanasheCareAssistantTheme {
                 AppNavigation(
@@ -35,7 +37,8 @@ class MainActivity : ComponentActivity() {
                     shiftRepository = shiftRepository,
                     vitalsRepository = vitalsRepository,
                     medicationRepository = medicationRepository,
-                    prescriptionRepository = prescriptionRepository
+                    prescriptionRepository = prescriptionRepository,
+                    dailyMedicationLogRepository = dailyMedicationLogRepository
                 )
             }
         }

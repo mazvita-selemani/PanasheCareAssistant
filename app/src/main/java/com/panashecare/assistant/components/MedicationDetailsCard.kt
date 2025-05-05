@@ -30,14 +30,23 @@ import androidx.compose.ui.unit.sp
 import com.panashecare.assistant.R
 import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.model.objects.MedicationWithDosage
-import com.panashecare.assistant.model.objects.Prescription
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
 @Composable
-fun MedicationDetailsCard(modifier: Modifier = Modifier, medicalList:  List<MedicationWithDosage>, isChecked: Boolean = false, onCheckedChange: (Boolean) -> Unit, index: Int) {
+fun MedicationDetailsCard(
+    modifier: Modifier = Modifier,
+    medicalList: List<MedicationWithDosage>,
+    getMedicationById: (String) -> Medication?,
+    isChecked: Boolean = false,
+    onCheckedChange: (Boolean) -> Unit,
+    index: Int
+) {
+
+    val medication = medicalList[index].medication?.let { getMedicationById(it) }
+
     Row(
         modifier = modifier
-            .padding(25.dp)
+            .padding(vertical = 10.dp)
             .fillMaxWidth()
             .height(71.dp)
             .background(color = Color(0xFFE7F7FA), shape = RoundedCornerShape(18.dp))
@@ -62,7 +71,7 @@ fun MedicationDetailsCard(modifier: Modifier = Modifier, medicalList:  List<Medi
 
         Column {
             Text(
-                text = "${medicalList[index].medication?.name}",
+                text = medication?.name ?: "Unknown medication",
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight(400),
@@ -70,7 +79,7 @@ fun MedicationDetailsCard(modifier: Modifier = Modifier, medicalList:  List<Medi
                 )
             )
             Text(
-                text = " ${medicalList[index].dosage} ${medicalList[index].medication?.unit}",
+                text = "${medicalList[index].dosage} ${medication?.unit ?: ""}",
                 style = TextStyle(
                     fontSize = 10.sp,
                     fontWeight = FontWeight(400),
@@ -111,11 +120,10 @@ fun MedicationDetailsCard(modifier: Modifier = Modifier, medicalList:  List<Medi
 }
 
 
-
 @Preview(showSystemUi = true)
 @Composable
-fun PreviewMedicationDetailsCard(){
+fun PreviewMedicationDetailsCard() {
     PanasheCareAssistantTheme {
-      //  MedicationDetailsCard()
+        //  MedicationDetailsCard()
     }
 }

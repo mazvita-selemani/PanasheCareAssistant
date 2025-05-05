@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.ShiftRepository
@@ -61,7 +62,8 @@ fun AppNavigation(
     shiftRepository: ShiftRepository,
     vitalsRepository: VitalsRepository,
     medicationRepository: MedicationRepository,
-    prescriptionRepository: PrescriptionRepository
+    prescriptionRepository: PrescriptionRepository,
+    dailyMedicationLogRepository: DailyMedicationLogRepository
 ) {
 
     val navController = rememberNavController()
@@ -131,7 +133,7 @@ fun AppNavigation(
             navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker)}
         ) }
 
-        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository) }
+        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository, dailyMedicationLogRepository, medicationRepository) }
 
     }
 }

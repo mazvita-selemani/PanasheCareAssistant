@@ -90,18 +90,18 @@ fun SchedulePrescriptionsScreen(
             patientId = "1234",
             morningTime = morningState.time,
             morningMedication = listOf(
-                MedicationWithDosage(morningState.prescriptionDetails[firstRow].selectedMedication, morningState.prescriptionDetails[firstRow].dosage),
-                MedicationWithDosage(morningState.prescriptionDetails[secondRow].selectedMedication, morningState.prescriptionDetails[secondRow].dosage)
+                MedicationWithDosage(morningState.prescriptionDetails[firstRow].selectedMedication.id, morningState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(morningState.prescriptionDetails[secondRow].selectedMedication.id, morningState.prescriptionDetails[secondRow].dosage)
             ),
             afternoonTime = afternoonState.time,
             afternoonMedication = listOf(
-                MedicationWithDosage(afternoonState.prescriptionDetails[firstRow].selectedMedication, afternoonState.prescriptionDetails[firstRow].dosage),
-                MedicationWithDosage(afternoonState.prescriptionDetails[secondRow].selectedMedication, afternoonState.prescriptionDetails[secondRow].dosage)
+                MedicationWithDosage(afternoonState.prescriptionDetails[firstRow].selectedMedication.id, afternoonState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(afternoonState.prescriptionDetails[secondRow].selectedMedication.id, afternoonState.prescriptionDetails[secondRow].dosage)
             ),
             eveningTime = eveningState.time,
             eveningMedication = listOf(
-                MedicationWithDosage(eveningState.prescriptionDetails[firstRow].selectedMedication, eveningState.prescriptionDetails[firstRow].dosage),
-                MedicationWithDosage(eveningState.prescriptionDetails[secondRow].selectedMedication, eveningState.prescriptionDetails[secondRow].dosage)
+                MedicationWithDosage(eveningState.prescriptionDetails[firstRow].selectedMedication.id, eveningState.prescriptionDetails[firstRow].dosage),
+                MedicationWithDosage(eveningState.prescriptionDetails[secondRow].selectedMedication.id, eveningState.prescriptionDetails[secondRow].dosage)
             )
         )
     }
