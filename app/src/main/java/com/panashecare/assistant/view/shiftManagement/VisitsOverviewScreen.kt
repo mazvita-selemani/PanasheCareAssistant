@@ -44,12 +44,13 @@ import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewMod
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewModelFactory
 
 @Composable
-fun ShiftsOverviewScreen(shiftRepository: ShiftRepository) {
+fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier) {
 
     val viewModel = viewModel<ShiftsOverviewViewModel>(factory = ShiftsOverviewViewModelFactory(shiftRepository))
 
 
     ShiftsOverview(
+        modifier = modifier,
         state = viewModel.state,
         onUpcomingChange = viewModel::onUpcomingShiftsChange ,
     )
@@ -215,7 +216,6 @@ private fun ShiftsOverview(
                     }
                 }
             } else {
-                // Use weight to center the text properly
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -239,57 +239,8 @@ fun CustomSpacer(height: Int) {
     Spacer(modifier = Modifier.height(height.dp))
 }
 
-// TODO() delete this
-data class shift(
-    val id: Int,
-    val healthAideName: String,
-    val previousshiftsCount: Int?, // Nullable
-    val dayOfshift: String,
-    val timeOfshift: String,
-    val period: String = "Upcoming",
-    val isAdmin: Boolean = true
-)
-
-val mockshifts = listOf(
-    shift(
-        id = 1,
-        healthAideName = "Sarah Johnson",
-        previousshiftsCount = 3,
-        dayOfshift = "Monday, April 21",
-        timeOfshift = "10:00 AM"
-    ),
-    shift(
-        id = 2,
-        healthAideName = "David Smith",
-        previousshiftsCount = null,
-        dayOfshift = "Tuesday, April 22",
-        timeOfshift = "12:30 PM"
-    ),
-    shift(
-        id = 3,
-        healthAideName = "Emily Brown",
-        previousshiftsCount = 1,
-        dayOfshift = "Wednesday, April 23",
-        timeOfshift = "09:15 AM"
-    ),
-    shift(
-        id = 4,
-        healthAideName = "Michael Green",
-        previousshiftsCount = 2,
-        dayOfshift = "Thursday, April 24",
-        timeOfshift = "3:45 PM"
-    ),
-    shift(
-        id = 5,
-        healthAideName = "Olivia Davis",
-        previousshiftsCount = 5,
-        dayOfshift = "Friday, April 25",
-        timeOfshift = "11:00 AM"
-    )
-)
-
 @Preview
 @Composable
 fun PreviewshiftsOverview() {
-    ShiftsOverviewScreen(ShiftRepository())
+ //   ShiftsOverviewScreen(ShiftRepository())
 }

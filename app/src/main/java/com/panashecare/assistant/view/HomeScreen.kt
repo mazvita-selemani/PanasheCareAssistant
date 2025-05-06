@@ -55,6 +55,7 @@ import com.panashecare.assistant.viewModel.HomeScreenViewModelFactory
 
 @Composable
 fun HomeScreen(
+    modifier: Modifier,
     repository: ShiftRepository,
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,
@@ -64,6 +65,7 @@ fun HomeScreen(
     val viewModel = viewModel<HomeScreenViewModel>(factory = HomeScreenViewModelFactory(repository))
     
     Home(
+        modifier = modifier,
         navigateToProfile = navigateToProfile,
         navigateToCreateShift = { navigateToCreateShift() },
         navigateToShiftList = { navigateToShiftList() },
@@ -88,8 +90,7 @@ fun Home(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(25.dp),
+            .padding(10.dp).verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -99,7 +100,7 @@ fun Home(
         HomePageSpacer(12)
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .width(354.dp)
                 .height(120.dp)
                 .background(color = Color(0xFFF8E7FA), shape = RoundedCornerShape(18.dp))
@@ -140,13 +141,13 @@ fun Home(
 
         //row for the two cards
         Row(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
             // view all shifts card
             HomePageNavCards(
-                modifier = modifier.weight(1f),
+                modifier = Modifier.weight(1f),
                 painterResourceId = R.drawable.icon_park_outline_list,
                 message = "View All Upcoming shifts",
                 onClickNavigation = { navigateToShiftList() },
@@ -159,7 +160,7 @@ fun Home(
 
             // create new shift card
             HomePageNavCards(
-                modifier = modifier.weight(1f),
+                modifier = Modifier.weight(1f),
                 painterResourceId = R.drawable.notes_svgrepo_com,
                 message = "Create a new shift",
                 onClickNavigation = { navigateToCreateShift() },
@@ -173,7 +174,7 @@ fun Home(
         HomePageSpacer(20)
 
         Row(
-            modifier = modifier.align(Alignment.Start)
+            modifier = Modifier.align(Alignment.Start)
         ) {
         Text(
             text = "Next shift",
@@ -190,7 +191,7 @@ fun Home(
         when (val stateN = viewModel.latestFutureState.collectAsState().value) {
             is ShiftResult.Loading -> Text("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
-                ShiftCard(modifier = modifier, state.futureShift!!)
+                ShiftCard(modifier = Modifier, state.futureShift!!)
             } ?: Text("No past shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
@@ -198,7 +199,7 @@ fun Home(
         HomePageSpacer(20)
 
         Row(
-            modifier = modifier.align(Alignment.Start)
+            modifier = Modifier.align(Alignment.Start)
         ) {
             Text(
                 text = "Previously Completed",
@@ -216,7 +217,7 @@ fun Home(
         when (val stateN = viewModel.latestShiftState.collectAsState().value) {
             is ShiftResult.Loading -> Text("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
-                ShiftCard(modifier = modifier, state.pastShift!!)
+                ShiftCard(modifier = Modifier, state.pastShift!!)
             } ?: Text("No past shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }

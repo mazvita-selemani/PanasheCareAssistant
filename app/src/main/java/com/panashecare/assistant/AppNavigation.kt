@@ -2,9 +2,9 @@ package com.panashecare.assistant
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
@@ -12,6 +12,7 @@ import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
 import com.panashecare.assistant.view.HomeScreen
+import com.panashecare.assistant.view.ProfileDetailsScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
 import com.panashecare.assistant.view.authentication.SignOut
@@ -32,6 +33,9 @@ object Register
 
 @Serializable
 object Home
+
+@Serializable
+object Profile
 
 @Serializable
 object ShiftList
@@ -63,10 +67,9 @@ fun AppNavigation(
     vitalsRepository: VitalsRepository,
     medicationRepository: MedicationRepository,
     prescriptionRepository: PrescriptionRepository,
-    dailyMedicationLogRepository: DailyMedicationLogRepository
+    dailyMedicationLogRepository: DailyMedicationLogRepository,
+    navController: NavHostController
 ) {
-
-    val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
@@ -86,25 +89,30 @@ fun AppNavigation(
             )
         }
 
+        composable<Profile> { ProfileDetailsScreen(modifier = modifier) }
+
         composable<Home> {
             HomeScreen(
                 navigateToProfile = { navController.navigate(SchedulePrescriptions) },
                 repository = shiftRepository,
                 navigateToCreateShift = { navController.navigate(CreateNewShift) },
-                navigateToShiftList = { navController.navigate(ShiftList) }
+                navigateToShiftList = { navController.navigate(ShiftList) },
+                modifier = modifier
             )
         }
 
         composable<CreateNewShift> {
             CreateNewShiftScreen(
-                userRepository, shiftRepository,
-                navigateToHome = { navController.navigate(Home) }
+                repository = userRepository, shiftRepository = shiftRepository,
+                navigateToHome = { navController.navigate(Home) },
+                modifier = modifier
             )
         }
 
         composable<ShiftList> {
             ShiftsOverviewScreen(
-                shiftRepository = shiftRepository
+                shiftRepository = shiftRepository,
+                modifier = modifier
             )
         }
 
@@ -117,23 +125,35 @@ fun AppNavigation(
 
         composable<VitalsLog> {
             LogVitalsScreen(
-                vitalsRepository,
+                modifier = modifier,
+                vitalsRepository = vitalsRepository,
                 navigateToVitalsList = { navController.navigate(VitalsList) })
         }
 
         composable<VitalsList> {
             ViewVitalsScreen(
+                modifier = modifier,
                 vitalsRepository = vitalsRepository,
                 navigateToCreateVitalsLog = { navController.navigate(VitalsLog) })
         }
 
-        composable<SchedulePrescriptions> { SchedulePrescriptionsScreen(
-            prescriptionRepository = prescriptionRepository,
-            medicationRepository = medicationRepository,
-            navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker)}
-        ) }
+        composable<SchedulePrescriptions> {
+            SchedulePrescriptionsScreen(
+                modifier = modifier,
+                prescriptionRepository = prescriptionRepository,
+                medicationRepository = medicationRepository,
+                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker) }
+            )
+        }
 
-        composable<DailyMedicationTracker>{ DailyMedicationTrackerScreen(prescriptionRepository, dailyMedicationLogRepository, medicationRepository, {}) }
+        composable<DailyMedicationTracker> {
+            DailyMedicationTrackerScreen(
+                modifier = modifier,
+                prescriptionRepository = prescriptionRepository,
+                dailyMedicationLogRepository = dailyMedicationLogRepository,
+                medicationRepository = medicationRepository,
+                navigateToStockManagement = {})
+        }
 
     }
 }
