@@ -1,5 +1,8 @@
 package com.panashecare.assistant.view
 
+import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,11 +24,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.panashecare.assistant.R
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.SearchBar
@@ -61,6 +71,10 @@ fun HomeScreen(
     navigateToCreateShift: () -> Unit,
     navigateToShiftList: () -> Unit,
 ){
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        RequestNotificationPermissionDialog()
+    }
 
     val viewModel = viewModel<HomeScreenViewModel>(factory = HomeScreenViewModelFactory(repository))
     
@@ -350,6 +364,65 @@ private fun HomePageNavCards(
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalPermissionsApi::class)
+@Composable
+fun RequestNotificationPermissionDialog() {
+    val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+
+    // Use SideEffect to request the permission only when the composable is first entered
+    SideEffect {
+        if (!permissionState.status.isGranted) {
+            permissionState.launchPermissionRequest()
+        }
+    }
+
+    // Show dialogs based on permission state
+    if (!permissionState.status.isGranted) {
+        if (permissionState.status.shouldShowRationale) {
+            RationaleDialog(permissionState = permissionState) // Pass the state!
+        } else {
+            PermissionDialog(permissionState = permissionState) // Pass the state!
+        }
+    } else {
+        // Permission is granted, you can show your main UI or proceed with notification logic
+        Text(text = "Permission Granted!  You can now receive notifications.")
+        // In a real app, you'd navigate to your main screen or enable notifications here.
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun RationaleDialog(permissionState: PermissionState) { // Take PermissionState
+    AlertDialog(
+        onDismissRequest = { /* Don't dismiss, force decision */ },
+        title = { Text(text = "Notification Permission Required") },
+        text = { Text(text = "Notifications are important for this app to function correctly. Please allow them.") },
+        confirmButton = {
+            Button(onClick = { permissionState.launchPermissionRequest() }) { // Use passed state
+                Text(text = "Allow")
+            }
+        },
+        dismissButton = null // Don't allow dismissing
+    )
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun PermissionDialog(permissionState: PermissionState) { // Take PermissionState
+    AlertDialog(
+        onDismissRequest = { /* Don't dismiss */ },
+        title = { Text(text = "Notification Permission") },
+        text = { Text(text = "This app needs notification permissions to send you important updates.") },
+        confirmButton = {
+            Button(onClick = { permissionState.launchPermissionRequest() }) { // Use passed state
+                Text(text = "OK")
+            }
+        },
+        dismissButton = null
+    )
 }
 
 @Preview(showSystemUi = true)

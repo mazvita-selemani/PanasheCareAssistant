@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">PanasheCareAssistant</string>
     <string name="firebase_url">https://panashe-care-app-default-rtdb.europe-west1.firebasedatabase.app</string>
+    <string name="default_notifications_channel">notifications_channel</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.panashecare.assistant.view.authentication
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +27,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.viewModel.authentication.AuthState
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
+import kotlinx.coroutines.tasks.await
 
 // commenting out some sections to test authentication from yt tutorial
 @Composable
@@ -51,6 +55,10 @@ fun LoginScreen(
     val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
+
+        val token = Firebase.messaging.token.await()
+        Log.d("FCM token:", token)
+
         when(authState.value){
             is AuthState.Authenticated -> onAuthenticated()
             is AuthState.Error -> Toast.makeText(context,
