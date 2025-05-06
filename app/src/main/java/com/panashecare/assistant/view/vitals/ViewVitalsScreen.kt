@@ -22,7 +22,7 @@ import com.panashecare.assistant.viewModel.vitals.ViewVitalsViewModel
 import com.panashecare.assistant.viewModel.vitals.ViewVitalsViewModelFactory
 
 @Composable
-fun ViewVitalsScreen(vitalsRepository: VitalsRepository, navigateToCreateVitalsLog: () -> Unit){
+fun ViewVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepository, navigateToCreateVitalsLog: () -> Unit){
 
     val viewModel = viewModel<ViewVitalsViewModel>(factory = ViewVitalsViewModelFactory(vitalsRepository))
 
@@ -30,6 +30,7 @@ fun ViewVitalsScreen(vitalsRepository: VitalsRepository, navigateToCreateVitalsL
 
 
     ViewVitals(
+        modifier = modifier,
         navigateToCreateVitalsLog = navigateToCreateVitalsLog,
         state = state
     )

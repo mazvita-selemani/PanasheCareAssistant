@@ -41,7 +41,7 @@ import java.time.ZoneId
 
 
 @Composable
-fun LogVitalsScreen(vitalsRepository: VitalsRepository, navigateToVitalsList: () -> Unit) {
+fun LogVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepository, navigateToVitalsList: () -> Unit) {
 
     val viewModel = viewModel<LogVitalsViewModel>(factory = LogVitalsViewModelFactory(vitalsRepository))
 
@@ -63,6 +63,7 @@ fun LogVitalsScreen(vitalsRepository: VitalsRepository, navigateToVitalsList: ()
     )
 
     LogVitals(
+        modifier = modifier,
         state = state,
         updateOxygenSaturationRecord = viewModel::updateOxygenSaturationRecord,
         updateBloodPressureRecord = viewModel::updateBloodPressureRecord,

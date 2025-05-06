@@ -39,13 +39,14 @@ import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryV
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun ManageMedicationInventoryScreen(medicationRepository: MedicationRepository) {
+fun ManageMedicationInventoryScreen(modifier: Modifier = Modifier, medicationRepository: MedicationRepository) {
 
     val viewModel = viewModel<ManageMedicationInventoryViewModel>(
         factory = ManageMedicationInventoryViewModelFactory(medicationRepository = medicationRepository)
     )
 
     ManageMedicationInventory(
+        modifier = modifier,
         state = viewModel.state,
         result = viewModel.medicationList
     )
@@ -157,5 +158,5 @@ private fun ManageMedicationInventory(
 @Preview
 @Composable
 fun PreviewManageInventory() {
-    ManageMedicationInventoryScreen(MedicationRepository())
+ //   ManageMedicationInventoryScreen(MedicationRepository())
 }

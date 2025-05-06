@@ -64,6 +64,7 @@ const val secondRow = 1
 
 @Composable
 fun SchedulePrescriptionsScreen(
+    modifier: Modifier = Modifier,
     prescriptionRepository: PrescriptionRepository,
     medicationRepository: MedicationRepository,
     navigateToDailyMedicationTracker: () -> Unit
@@ -107,6 +108,7 @@ fun SchedulePrescriptionsScreen(
     }
 
    SchedulePrescriptions(
+        modifier = modifier,
         morningState = morningState,
         afternoonState = afternoonState,
         eveningState = eveningState,

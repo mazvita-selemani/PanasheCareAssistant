@@ -49,11 +49,12 @@ import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerView
 import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerViewModelFactory
 
 @Composable
-fun DailyMedicationTrackerScreen(prescriptionRepository: PrescriptionRepository, dailyMedicationLogRepository: DailyMedicationLogRepository, medicationRepository: MedicationRepository, navigateToStockManagement: ()-> Unit){
+fun DailyMedicationTrackerScreen(modifier: Modifier = Modifier, prescriptionRepository: PrescriptionRepository, dailyMedicationLogRepository: DailyMedicationLogRepository, medicationRepository: MedicationRepository, navigateToStockManagement: ()-> Unit){
 
     val viewModel = viewModel<DailyMedicationTrackerViewModel>(factory = DailyMedicationTrackerViewModelFactory(prescriptionRepository, dailyMedicationLogRepository, medicationRepository))
 
     DailyMedicationTracker(
+        modifier = modifier,
         state = viewModel.state,
         onMorningFirstCheckedChange = viewModel::updateMorningFirstChecked,
         onMorningSecondCheckedChange = viewModel::updateMorningSecondChecked,

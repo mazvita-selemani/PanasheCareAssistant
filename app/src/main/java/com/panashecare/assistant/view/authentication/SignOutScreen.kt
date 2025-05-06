@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
 
 @Composable
-fun SignOut(authViewModel: AuthViewModel, navigateToLogin: () -> Unit){
+fun SignOut(modifier: Modifier = Modifier, authViewModel: AuthViewModel, navigateToLogin: () -> Unit){
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally){
 

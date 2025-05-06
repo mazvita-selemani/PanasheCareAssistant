@@ -90,8 +90,7 @@ fun Home(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(25.dp),
+            .padding(10.dp).verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {

@@ -47,6 +47,7 @@ import com.panashecare.assistant.viewModel.shiftManagement.ShiftScheduleState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateNewShiftScreen(
+    modifier: Modifier,
     repository: UserRepository,
     shiftRepository: ShiftRepository,
     navigateToHome: () -> Unit
@@ -91,6 +92,7 @@ fun CreateNewShiftScreen(
     )
 
     CreateNewShift(
+        modifier =  modifier,
         state = viewModel.state,
         updateStartDate = viewModel::updateStartDate,
         updateEndDate = viewModel::updateEndDate,
