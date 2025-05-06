@@ -8,9 +8,6 @@
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PrescriptionsInputPreview">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="PreviewSchedulePrescriptions">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
