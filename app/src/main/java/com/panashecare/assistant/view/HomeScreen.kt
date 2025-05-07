@@ -56,6 +56,7 @@ import com.panashecare.assistant.R
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.ShiftResult
 import com.panashecare.assistant.viewModel.HomeScreenState
@@ -66,6 +67,7 @@ import com.panashecare.assistant.viewModel.HomeScreenViewModelFactory
 @Composable
 fun HomeScreen(
     modifier: Modifier,
+    userId: String,
     repository: ShiftRepository,
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,

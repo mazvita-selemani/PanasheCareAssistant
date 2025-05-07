@@ -27,43 +27,50 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.messaging
 import com.panashecare.assistant.components.FormField
+import com.panashecare.assistant.model.objects.User
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.authentication.AuthState
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
+import com.panashecare.assistant.viewModel.authentication.LoginViewModel
+import com.panashecare.assistant.viewModel.authentication.LoginViewModelFactory
+import com.panashecare.assistant.viewModel.authentication.RegisterViewModel
+import com.panashecare.assistant.viewModel.authentication.RegisterViewModelFactory
 import kotlinx.coroutines.tasks.await
 
-// commenting out some sections to test authentication from yt tutorial
 @Composable
 fun LoginScreen(
-    /*email: String,
-    password: String,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,*/
     modifier: Modifier,
+    repository: UserRepository,
     authViewModel: AuthViewModel,
     onNavigateToRegister: () -> Unit,
-    onAuthenticated: () -> Unit
+    onAuthenticated: (User) -> Unit
 ) {
-
-    // TODO() add states to view model uistate manager
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
+    val viewModel = viewModel<LoginViewModel>(factory = LoginViewModelFactory(repository))
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
 
-        val token = Firebase.messaging.token.await()
-        Log.d("FCM token:", token)
+      //  val token = Firebase.messaging.token.await()
+      //  Log.d("FCM token:", token)
 
         when(authState.value){
             is AuthState.Authenticated -> {
-                onAuthenticated()
-                subscribeToNotificationsTopic()
+                // temporary workaround for user object passing
+                if(viewModel.state.email.isNotEmpty()) {
+                    viewModel.getUserAfterLogin(viewModel.state.email) { user ->
+                        user?.let {
+                            onAuthenticated(it)
+                            subscribeUserToShiftNotifications(it)
+                            subscribeUserToVitalLogNotifications()
+                        } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             is AuthState.Error -> Toast.makeText(context,
                 (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
@@ -88,8 +95,8 @@ fun LoginScreen(
         )
 
         FormField(
-            value = email,
-            onChange = { email = it },
+            value = viewModel.state.email,
+            onChange = viewModel::onEmailChange,
             label = "Email",
             placeholder = "Enter your email",
             modifier = modifier
@@ -98,8 +105,8 @@ fun LoginScreen(
         Spacer(modifier = modifier.height(10.dp))
 
         FormField(
-            value = password,
-            onChange = { password = it },
+            value = viewModel.state.password,
+            onChange = viewModel::onPasswordChange,
             label = "Password",
             placeholder = "Enter your password",
             modifier = modifier
@@ -109,7 +116,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                authViewModel.login(email, password)
+                authViewModel.login(viewModel.state.email, viewModel.state.password)
             },
             modifier = buttonModifier,
             colors = ButtonColors(
@@ -143,9 +150,8 @@ fun LoginScreen(
     }
 }
 
-fun subscribeToNotificationsTopic() {
-    // TODO() make the user subscribe to their userId as a topic so they get notified of new shifts
-    FirebaseMessaging.getInstance().subscribeToTopic("shifts")
+fun subscribeUserToShiftNotifications(user:User) {
+    FirebaseMessaging.getInstance().subscribeToTopic("${user.id}")
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("FCM", "Subscribed to 'shifts' topic successfully")
@@ -155,23 +161,13 @@ fun subscribeToNotificationsTopic() {
         }
 }
 
-/*
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewLoginScreen(){
-    PanasheCareAssistantTheme {
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-        Login(
-            onPasswordChange = { password = it },
-            onEmailChange = { email = it },
-            modifier = Modifier,
-            email = email,
-            password = password
-        )
-    }
+fun subscribeUserToVitalLogNotifications() {
+    FirebaseMessaging.getInstance().subscribeToTopic("vitals")
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FCM", "Subscribed to 'vitals' topic successfully")
+            } else {
+                Log.e("FCM", "Topic subscription failed", task.exception)
+            }
+        }
 }
-*/
-
-
