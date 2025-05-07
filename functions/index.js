@@ -22,12 +22,11 @@ exports.notifyNewShift = functions.database
       ref: "/shifts/{shiftId}",
       region: "europe-west1",
     }, (snapshot, context) => {
-      const shiftData = snapshot.val();
-
+      const shiftData = snapshot.data._data;
       const payload = {
         notification: {
           title: "New Shift Available",
-          body: `${shiftData.title} starts at ${shiftData.time}`,
+          body: `${shiftData.id} starts at ${shiftData.shiftDate}`,
         },
         topic: "shifts",
       };

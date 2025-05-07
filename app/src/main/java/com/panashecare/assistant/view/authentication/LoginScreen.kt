@@ -144,6 +144,7 @@ fun LoginScreen(
 }
 
 fun subscribeToNotificationsTopic() {
+    // TODO() make the user subscribe to their userId as a topic so they get notified of new shifts
     FirebaseMessaging.getInstance().subscribeToTopic("shifts")
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
