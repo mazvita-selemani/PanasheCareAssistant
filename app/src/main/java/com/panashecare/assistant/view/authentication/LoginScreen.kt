@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.messaging
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.viewModel.authentication.AuthState
@@ -60,7 +61,10 @@ fun LoginScreen(
         Log.d("FCM token:", token)
 
         when(authState.value){
-            is AuthState.Authenticated -> onAuthenticated()
+            is AuthState.Authenticated -> {
+                onAuthenticated()
+                subscribeToNotificationsTopic()
+            }
             is AuthState.Error -> Toast.makeText(context,
                 (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
             else -> Unit
@@ -137,6 +141,17 @@ fun LoginScreen(
 
         TextButton(onClick = onNavigateToRegister) { Text("Don't have an account? Sign up") }
     }
+}
+
+fun subscribeToNotificationsTopic() {
+    FirebaseMessaging.getInstance().subscribeToTopic("shifts")
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FCM", "Subscribed to 'shifts' topic successfully")
+            } else {
+                Log.e("FCM", "Topic subscription failed", task.exception)
+            }
+        }
 }
 
 /*
