@@ -96,6 +96,17 @@ class UserRepository(
         awaitClose { database.removeEventListener(listener) }
     }
 
+    fun getUserByEmail(email: String, callback: (User?) -> Unit) {
+        database.get().addOnSuccessListener { snapshot ->
+            val matchedUser = snapshot.children.mapNotNull { it.getValue(User::class.java) }
+                .find { it.email == email }
+            callback(matchedUser)
+        }.addOnFailureListener {
+            callback(null)
+        }
+    }
+
+
     fun saveUser(user: User, onComplete: (Boolean) -> Unit) {
         Log.d("Register", "About to save user")
         val userId = database.push().key

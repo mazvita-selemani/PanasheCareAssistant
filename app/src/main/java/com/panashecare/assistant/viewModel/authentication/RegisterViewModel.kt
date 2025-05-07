@@ -64,7 +64,6 @@ class RegisterViewModel(
             userRepository.saveUser(user) { success ->
                 if (success) {
                     Log.d("Firebase", "User saved!")
-                    // Do next action here
                 } else {
                     Log.e("Firebase", "User save failed.")
                 }
