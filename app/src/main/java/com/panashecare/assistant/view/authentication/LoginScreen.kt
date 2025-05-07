@@ -33,6 +33,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.messaging
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.model.objects.User
+import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.authentication.AuthState
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
@@ -46,11 +47,12 @@ import kotlinx.coroutines.tasks.await
 fun LoginScreen(
     modifier: Modifier,
     repository: UserRepository,
+    prescriptionRepository: PrescriptionRepository,
     authViewModel: AuthViewModel,
     onNavigateToRegister: () -> Unit,
     onAuthenticated: (User) -> Unit
 ) {
-    val viewModel = viewModel<LoginViewModel>(factory = LoginViewModelFactory(repository))
+    val viewModel = viewModel<LoginViewModel>(factory = LoginViewModelFactory(repository, prescriptionRepository))
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
 
@@ -68,6 +70,7 @@ fun LoginScreen(
                             onAuthenticated(it)
                             subscribeUserToShiftNotifications(it)
                             subscribeUserToVitalLogNotifications()
+                            viewModel.scheduleMedicationNotifications("-OPVVDqxQGr8RPH3dxzO", context) //hardcoded prescriptionId
                         } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
                     }
                 }

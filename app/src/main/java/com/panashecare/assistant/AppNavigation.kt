@@ -80,9 +80,10 @@ fun AppNavigation(
                 authViewModel = authViewModel,
                 onAuthenticated = { user ->
                     navController.navigate(Home(user = user.id!!))
-                                  },
+                },
                 onNavigateToRegister = { navController.navigate(Register) },
-                repository = userRepository
+                repository = userRepository,
+                prescriptionRepository = prescriptionRepository
             )
         }
 
