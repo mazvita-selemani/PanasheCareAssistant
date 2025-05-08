@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 
 class LoginViewModel(private val repository: UserRepository, private val prescriptionRepository: PrescriptionRepository): ViewModel() {
 
-    var state by mutableStateOf(RegisterUiState())
+    var state by mutableStateOf(LoginUiState())
 
     fun scheduleMedicationNotifications(prescriptionId: String, context: Context) {
         viewModelScope.launch {
