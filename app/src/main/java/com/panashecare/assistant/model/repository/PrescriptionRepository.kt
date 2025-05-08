@@ -49,6 +49,28 @@ class PrescriptionRepository(
         Log.d("Register", "created Prescription successfully")
     }
 
+    fun observePrescriptions(prescriptionId: String): Flow<List<String>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                val morning = snapshot.child(prescriptionId).child("morningTime").getValue(String::class.java)
+                val evening = snapshot.child(prescriptionId).child("eveningTime").getValue(String::class.java)
+                val afternoon = snapshot.child(prescriptionId).child("afternoonTime").getValue(String::class.java)
+
+                val times = listOf(morning!!, evening!!, afternoon!!)
+                trySend(times)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+
+        database.addValueEventListener(listener)
+        awaitClose { database.removeEventListener(listener) }
+    }
+
+
     // update inventory for this medication
     fun updatePrescriptionMedication(prescriptionId: String, timeOfMedication: String, index: Int, newInventoryLevel: Int, onComplete: (Boolean) -> Unit) {
         database.child(prescriptionId)

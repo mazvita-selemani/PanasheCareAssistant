@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
@@ -32,7 +34,7 @@ object Login
 object Register
 
 @Serializable
-object Home
+data class Home(val user: String)
 
 @Serializable
 object Profile
@@ -74,10 +76,14 @@ fun AppNavigation(
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
             LoginScreen(
-                modifier = modifier,
+                modifier = Modifier,
                 authViewModel = authViewModel,
-                onAuthenticated = { navController.navigate(Home) },
-                onNavigateToRegister = { navController.navigate(Register) }
+                onAuthenticated = { user ->
+                    navController.navigate(Home(user = user.id!!))
+                },
+                onNavigateToRegister = { navController.navigate(Register) },
+                repository = userRepository,
+                prescriptionRepository = prescriptionRepository
             )
         }
 
@@ -91,20 +97,23 @@ fun AppNavigation(
 
         composable<Profile> { ProfileDetailsScreen(modifier = modifier) }
 
-        composable<Home> {
+        composable<Home> { backStackEntry ->
+            val home: Home = backStackEntry.toRoute()
+            val userId = home.user
             HomeScreen(
                 navigateToProfile = { navController.navigate(SchedulePrescriptions) },
                 repository = shiftRepository,
                 navigateToCreateShift = { navController.navigate(CreateNewShift) },
                 navigateToShiftList = { navController.navigate(ShiftList) },
-                modifier = modifier
+                modifier = modifier,
+                userId = userId
             )
         }
 
         composable<CreateNewShift> {
             CreateNewShiftScreen(
                 repository = userRepository, shiftRepository = shiftRepository,
-                navigateToHome = { navController.navigate(Home) },
+                navigateToHome = { navController.navigate(Home(user = "placeHolder")) },
                 modifier = modifier
             )
         }

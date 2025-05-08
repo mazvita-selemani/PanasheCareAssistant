@@ -1,5 +1,6 @@
 package com.panashecare.assistant.viewModel.medication
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -8,6 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.panashecare.assistant.model.objects.DailyMedicationLog
 import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.model.objects.Prescription
@@ -16,12 +20,18 @@ import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.MedicationResult
 import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.PrescriptionResult
+import com.panashecare.assistant.model.service.LocalNotificationWorker
 import com.panashecare.assistant.utils.TimeSerialisationHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 class DailyMedicationTrackerViewModel(
     private val prescriptionRepository: PrescriptionRepository,
