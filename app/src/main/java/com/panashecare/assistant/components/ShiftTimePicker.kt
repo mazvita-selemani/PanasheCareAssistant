@@ -233,12 +233,6 @@ fun TimeDateTextField(value: String, modifier: Modifier){
     )
 }
 
-@Preview(showSystemUi = true)
-@Composable
-fun PreviewForm(){
-    //ShiftTimePicker()
-}
-
 /**
  * this is the time picker
  */

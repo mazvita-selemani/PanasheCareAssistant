@@ -35,7 +35,7 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.components.ShiftTimePicker
 import com.panashecare.assistant.model.objects.Shift
-import com.panashecare.assistant.model.objects.ShiftPeriod
+import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
@@ -79,16 +79,15 @@ fun CreateNewShiftScreen(
             )
         } else null
 
-
-    // TODO sort out past and future rendering, note instead of static values use a function to render closest shift after today and closest before today instead
-
     val shift = Shift(
         adminName = User(firstName = "AJ", lastName = "Simpson"), // pass actual names
         healthAideName = state.selectedCarer,
-        currentUser = User(firstName = "AJ", lastName = "Simpson"),
         shiftDate = startDate,
-        shiftPeriod = ShiftPeriod.FUTURE,
         shiftDuration = duration,
+        shiftEndTime = endTime,
+        shiftEndDate = endDate,
+        shiftStatus = ShiftStatus.REQUESTED,
+        shiftTime = startTime
     )
 
     CreateNewShift(
@@ -190,7 +189,7 @@ fun CreateNewShift(
             // SearchBar()
 
             Column(
-                modifier = modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
@@ -201,7 +200,7 @@ fun CreateNewShift(
                     onExpandedChange = { onExpandedChange(isExpanded) }
                 ) {
                     TextField(
-                        modifier = modifier.menuAnchor(),
+                        modifier = Modifier.menuAnchor(),
                         value = selectedText ?: "",
                         onValueChange = { },
                         readOnly = true,
@@ -256,7 +255,7 @@ fun CreateNewShift(
                 value = "",
                 onValueChange = {},
                 placeholder = { Text("(Optional)") },
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxHeight(0.8f)
                     .fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(

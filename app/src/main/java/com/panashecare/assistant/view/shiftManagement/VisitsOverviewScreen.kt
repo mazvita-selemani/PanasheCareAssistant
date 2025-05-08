@@ -212,6 +212,7 @@ private fun ShiftsOverview(
                     ) { _, shiftSingle ->
                         ShiftCard(
                             shift = shiftSingle,
+                            navigateToSingleShiftView = { TODO() },
                         )
                     }
                 }

@@ -2,6 +2,7 @@ package com.panashecare.assistant.view
 
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -56,6 +57,7 @@ import com.panashecare.assistant.R
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
+import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.ShiftResult
@@ -72,6 +74,8 @@ fun HomeScreen(
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,
     navigateToShiftList: () -> Unit,
+    navigateToSingleViewForPastShift: (Shift) -> Unit,
+    navigateToSingleViewForFutureShift: (Shift) -> Unit
 ){
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -79,14 +83,26 @@ fun HomeScreen(
     }
 
     val viewModel = viewModel<HomeScreenViewModel>(factory = HomeScreenViewModelFactory(repository))
-    
+    val futureShift = viewModel.state.futureShift
+    val pastShift by lazy { viewModel.state.pastShift }
+
+    Log.d("HomeScreen", "pastShift: $futureShift")
+
     Home(
         modifier = modifier,
         navigateToProfile = navigateToProfile,
         navigateToCreateShift = { navigateToCreateShift() },
         navigateToShiftList = { navigateToShiftList() },
         state = viewModel.state,
-        viewModel = viewModel
+        viewModel = viewModel,
+        navigateToSingleViewForPastShift = { _ ->
+            pastShift?.let { navigateToSingleViewForPastShift(it) }
+        },
+
+        navigateToSingleViewForFutureShift = { _ ->
+            futureShift?.let { navigateToSingleViewForFutureShift(it) }
+        }
+
     )
 }
 
@@ -97,6 +113,8 @@ fun Home(
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,
     navigateToShiftList: () -> Unit,
+    navigateToSingleViewForPastShift : (Shift) -> Unit,
+    navigateToSingleViewForFutureShift : (Shift) -> Unit,
     state: HomeScreenState,
     viewModel: HomeScreenViewModel
 ) {
@@ -106,7 +124,8 @@ fun Home(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(10.dp).verticalScroll(scrollState),
+            .padding(10.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -207,7 +226,10 @@ fun Home(
         when (val stateN = viewModel.latestFutureState.collectAsState().value) {
             is ShiftResult.Loading -> Text("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
-                ShiftCard(modifier = Modifier, state.futureShift!!)
+                ShiftCard(
+                    modifier = Modifier, state.futureShift!!,
+                    navigateToSingleShiftView = { navigateToSingleViewForFutureShift(state.futureShift)  }
+                )
             } ?: Text("No past shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
@@ -233,7 +255,10 @@ fun Home(
         when (val stateN = viewModel.latestShiftState.collectAsState().value) {
             is ShiftResult.Loading -> Text("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
-                ShiftCard(modifier = Modifier, state.pastShift!!)
+                ShiftCard(
+                    modifier = Modifier, state.pastShift!!,
+                    navigateToSingleShiftView = { navigateToSingleViewForPastShift(state.pastShift)  }
+                )
             } ?: Text("No past shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
@@ -261,12 +286,10 @@ private fun HomePageNavCards(
     buttonContentColor: Color,
     cardBorderColor: Color
 ) {
-    //parent container
     Box(
         modifier = modifier
             .height(115.dp)
     ) {
-        //child container
         Box(
             modifier = modifier
                 .shadow(

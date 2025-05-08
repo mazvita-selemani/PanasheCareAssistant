@@ -20,6 +20,20 @@ class ShiftRepository(
 ) {
     private val shiftPeriodHelper = ShiftPeriodHelper()
 
+    fun getShiftById(shiftId: String, onResult: (Shift?) -> Unit) {
+        database.child(shiftId).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val shift = snapshot.getValue(Shift::class.java)
+                onResult(shift)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ShiftRepository", "Error fetching shift: ${error.message}")
+                onResult(null)
+            }
+        })
+    }
+
     fun getShiftsRealtime(): Flow<ShiftResult> = callbackFlow {
         trySend(ShiftResult.Loading)
 

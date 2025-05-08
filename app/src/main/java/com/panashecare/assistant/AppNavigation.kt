@@ -1,5 +1,6 @@
 package com.panashecare.assistant
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -22,6 +23,7 @@ import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
 import com.panashecare.assistant.view.shiftManagement.CreateNewShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ShiftsOverviewScreen
+import com.panashecare.assistant.view.shiftManagement.ViewShiftScreen
 import com.panashecare.assistant.view.vitals.LogVitalsScreen
 import com.panashecare.assistant.view.vitals.ViewVitalsScreen
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
@@ -38,6 +40,9 @@ data class Home(val user: String)
 
 @Serializable
 object Profile
+
+@Serializable
+data class SingleShiftView(val shiftId: String)
 
 @Serializable
 object ShiftList
@@ -106,7 +111,12 @@ fun AppNavigation(
                 navigateToCreateShift = { navController.navigate(CreateNewShift) },
                 navigateToShiftList = { navController.navigate(ShiftList) },
                 modifier = modifier,
-                userId = userId
+                userId = userId,
+                navigateToSingleViewForPastShift = {shift ->
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!))},
+                navigateToSingleViewForFutureShift = {shift ->
+                    Log.d("Navigation", "Shift ID: ${shift.id}")
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!))}
             )
         }
 
@@ -123,6 +133,17 @@ fun AppNavigation(
                 shiftRepository = shiftRepository,
                 modifier = modifier
             )
+        }
+
+        composable<SingleShiftView>{ backStackEntry ->
+            val singleShiftView: SingleShiftView = backStackEntry.toRoute()
+            val shiftId = singleShiftView.shiftId
+            ViewShiftScreen(
+                modifier = modifier,
+                shiftId = shiftId,
+                shiftRepository = shiftRepository
+            )
+
         }
 
         composable<SignOut> {
