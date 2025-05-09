@@ -42,10 +42,9 @@ class UpdateShiftViewModel(
 
     fun getShiftById(shiftId: String) {
         shiftRepository.getShiftById(shiftId) { shift ->
-            Log.d("SingleShiftViewModel", "Shift: $shift")
-            Log.d("SingleShiftViewModel", "Shift Id: $shiftId")
             if (shift != null) {
                 loadShiftDetails(shift)
+                state = state.copy(originalShift = shift)
             }
         }
     }
@@ -98,6 +97,14 @@ class UpdateShiftViewModel(
 
     fun updateSelectedCarer(user: User) {
         state = state.copy(selectedCarer = user)
+    }
+
+    fun confirmSelectedCarer() {
+        state = state.copy(healthAideName = state.selectedCarer?.getFullName()!!)
+    }
+
+    fun cancelSelectedCarer(shift: Shift) {
+        state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
     }
 
 
@@ -171,6 +178,7 @@ data class UpdateShiftState @OptIn(ExperimentalMaterial3Api::class) constructor(
     val notes: String = "",
     val isDropDownMenuExpanded: Boolean = false,
     val showDropDownMenu: Boolean = false,
+    val originalShift: Shift? = null,
     override val showStartDatePicker: Boolean = false,
     override val showStartTimePicker: Boolean = false,
     override val showEndDatePicker: Boolean = false,

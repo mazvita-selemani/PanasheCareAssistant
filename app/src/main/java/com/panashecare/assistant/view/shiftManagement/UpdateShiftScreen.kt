@@ -53,6 +53,7 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.ShiftTimePicker
+import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
@@ -107,21 +108,23 @@ fun UpdateShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: Shif
         updateEndDate = viewModel::updateEndDate,
         updateStartTime = viewModel::updateStartTime,
         updateEndTime = viewModel::updateEndTime,
-        showStartDatePicker =viewModel::showStartDatePicker,
+        showStartDatePicker = viewModel::showStartDatePicker,
         showStartTimePicker = viewModel::showStartTimePicker,
         showEndDatePicker = viewModel::showEndDatePicker,
         showEndTimePicker = viewModel::showEndTimePicker,
         navigateToSingleShiftView = {
             navigateToSingleShiftView()
             viewModel.updateShift(shiftId = shiftId, updatedFields = updatedFields)
-                                    },
+        },
         showDropDownMenu = state.showDropDownMenu,
         updateShowDropDownMenu = viewModel::updateShowDropDownMenu,
         isDropDownMenuExpanded = state.isDropDownMenuExpanded,
         updateIsDropDownExpanded = viewModel::updateIsExpanded,
         selectedCarer = state.selectedCarer?.getFullName() ?: "",
         carersList = state.carers ?: emptyList(),
-        onSelectCarerChange = viewModel::updateSelectedCarer
+        onSelectCarerChange = viewModel::updateSelectedCarer,
+        confirmCarerSelection = { viewModel.confirmSelectedCarer() },
+        cancelCarerSelection = { viewModel.cancelSelectedCarer(state.originalShift!!) }
     )
 }
 
@@ -143,13 +146,14 @@ fun UpdateShift(
     showStartTimePicker: (Boolean) -> Unit,
     showEndDatePicker: (Boolean) -> Unit,
     showEndTimePicker: (Boolean) -> Unit,
+    confirmCarerSelection: () -> Unit,
+    cancelCarerSelection: () -> Unit,
     selectedCarer: String,
     carersList: List<User>,
     onSelectCarerChange: (User) -> Unit,
 ) {
     val appColors = AppColors()
     val scrollState = rememberScrollState()
-    var showSearchBar by remember { mutableStateOf(false) }
     val density = LocalDensity.current
 
     Column(
@@ -180,7 +184,7 @@ fun UpdateShift(
 
         // profile card
         AnimatedVisibility(
-            visible = !showSearchBar,
+            visible = !showDropDownMenu,
             enter = slideInVertically {
                 with(density) { -40.dp.roundToPx() }
             } + expandVertically(
@@ -222,7 +226,7 @@ fun UpdateShift(
 
                 Row(modifier = Modifier.align(Alignment.End)) {
                     Button(
-                        onClick = { showSearchBar = true },
+                        onClick = { updateShowDropDownMenu(showDropDownMenu) },
                         modifier = Modifier
                             .width(155.dp)
                             .height(45.dp),
@@ -240,7 +244,7 @@ fun UpdateShift(
 
         //search card
         AnimatedVisibility(
-            visible = showSearchBar,
+            visible = showDropDownMenu,
             enter = slideInVertically {
                 with(density) { -40.dp.roundToPx() }
             } + expandVertically(
@@ -276,8 +280,6 @@ fun UpdateShift(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    Log.d("It works", "$carersList")
-
                     ExposedDropdownMenuBox(
                         expanded = isDropDownMenuExpanded,
                         onExpandedChange = { updateIsDropDownExpanded(isDropDownMenuExpanded) }
@@ -298,7 +300,7 @@ fun UpdateShift(
 
                             carersList.forEachIndexed { _, carer ->
                                 DropdownMenuItem(
-                                    text = { Text(text = "${carer.firstName} ${carer.lastName}") },
+                                    text = { Text(text = carer.getFullName()) },
                                     onClick = {
                                         onSelectCarerChange(carer)
                                         updateIsDropDownExpanded(isDropDownMenuExpanded)
@@ -316,7 +318,10 @@ fun UpdateShift(
                 ) {
 
                     Button(
-                        onClick = { updateShowDropDownMenu(showDropDownMenu) },
+                        onClick = {
+                            cancelCarerSelection()
+                            updateShowDropDownMenu(showDropDownMenu)
+                                  },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -330,7 +335,9 @@ fun UpdateShift(
                     }
 
                     Button(
-                        onClick = { updateShowDropDownMenu(showDropDownMenu) },
+                        onClick = {
+                            confirmCarerSelection()
+                            updateShowDropDownMenu(showDropDownMenu) },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -377,7 +384,7 @@ fun UpdateShift(
                 onValueChange = {},
                 placeholder = { Text("(Optional)") },
                 modifier = modifier
-                    .fillMaxHeight(0.8f)
+                    .fillMaxHeight()
                     .fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = appColors.formTextPrimary,
