@@ -1,5 +1,6 @@
 package com.panashecare.assistant.view.shiftManagement
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -23,12 +24,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,16 +48,96 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.HeaderButtonPair
-import com.panashecare.assistant.components.SearchBar
+import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.ShiftTimePicker
-import com.panashecare.assistant.viewModel.shiftManagement.ShiftScheduleState
+import com.panashecare.assistant.model.objects.Shift
+import com.panashecare.assistant.model.objects.User
+import com.panashecare.assistant.model.repository.ShiftRepository
+import com.panashecare.assistant.model.repository.UserRepository
+import com.panashecare.assistant.utils.TimeSerialisationHelper
+import com.panashecare.assistant.viewModel.shiftManagement.UpdateShiftState
+import com.panashecare.assistant.viewModel.shiftManagement.UpdateShiftViewModel
+import com.panashecare.assistant.viewModel.shiftManagement.UpdateShiftViewModelFactory
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UpdateShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository, userRepository: UserRepository, navigateToSingleShiftView: () -> Unit) {
+
+    val viewModel = viewModel<UpdateShiftViewModel>(factory = UpdateShiftViewModelFactory(shiftRepository = shiftRepository, repository = userRepository))
+
+    LaunchedEffect(Unit){
+        viewModel.getShiftById(shiftId)
+    }
+
+    val state = viewModel.state
+    val helper = TimeSerialisationHelper()
+
+    val startDate = state.startDate?.let(helper::convertDateToString)
+    val endDate = state.endDate?.let(helper::convertDateToString)
+    val startTime = state.startTime?.let(helper::timePickerStateToFormattedString)
+    val endTime = state.endTime?.let(helper::timePickerStateToFormattedString)
+
+    val duration =
+        if (startDate != null && startTime != null && endDate != null && endTime != null) {
+            helper.calculateFormattedShiftDuration(
+                startDate = startDate,
+                startTime = startTime,
+                endDate = endDate,
+                endTime = endTime
+            )
+        } else null
+
+
+    // updating the value in this specific id
+    val updatedFields = mapOf(
+        "healthAideName" to state.selectedCarer,
+        "shiftDate" to startDate,
+        "shiftDuration" to duration,
+        "shiftEndTime" to endTime,
+        "shiftEndDate" to endDate,
+        "shiftTime" to startTime
+    )
+
+    UpdateShift(
+        modifier = modifier,
+        state = state,
+        updateStartDate = viewModel::updateStartDate,
+        updateEndDate = viewModel::updateEndDate,
+        updateStartTime = viewModel::updateStartTime,
+        updateEndTime = viewModel::updateEndTime,
+        showStartDatePicker = viewModel::showStartDatePicker,
+        showStartTimePicker = viewModel::showStartTimePicker,
+        showEndDatePicker = viewModel::showEndDatePicker,
+        showEndTimePicker = viewModel::showEndTimePicker,
+        navigateToSingleShiftView = {
+            navigateToSingleShiftView()
+            viewModel.updateShift(shiftId = shiftId, updatedFields = updatedFields)
+        },
+        showDropDownMenu = state.showDropDownMenu,
+        updateShowDropDownMenu = viewModel::updateShowDropDownMenu,
+        isDropDownMenuExpanded = state.isDropDownMenuExpanded,
+        updateIsDropDownExpanded = viewModel::updateIsExpanded,
+        selectedCarer = state.selectedCarer?.getFullName() ?: "",
+        carersList = state.carers ?: emptyList(),
+        onSelectCarerChange = viewModel::updateSelectedCarer,
+        confirmCarerSelection = { viewModel.confirmSelectedCarer() },
+        cancelCarerSelection = { viewModel.cancelSelectedCarer(state.originalShift!!) }
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateShift(
-    modifier: Modifier = Modifier, state: ShiftScheduleState,
+    modifier: Modifier = Modifier,
+    navigateToSingleShiftView: () -> Unit,
+    state: UpdateShiftState,
+    showDropDownMenu: Boolean,
+    updateShowDropDownMenu: (Boolean) -> Unit,
+    isDropDownMenuExpanded: Boolean,
+    updateIsDropDownExpanded: (Boolean) -> Unit,
     updateStartDate: (Long) -> Unit,
     updateEndDate: (Long) -> Unit,
     updateStartTime: (TimePickerState) -> Unit,
@@ -60,10 +146,14 @@ fun UpdateShift(
     showStartTimePicker: (Boolean) -> Unit,
     showEndDatePicker: (Boolean) -> Unit,
     showEndTimePicker: (Boolean) -> Unit,
+    confirmCarerSelection: () -> Unit,
+    cancelCarerSelection: () -> Unit,
+    selectedCarer: String,
+    carersList: List<User>,
+    onSelectCarerChange: (User) -> Unit,
 ) {
     val appColors = AppColors()
     val scrollState = rememberScrollState()
-    var showSearchBar by remember { mutableStateOf(false) }
     val density = LocalDensity.current
 
     Column(
@@ -74,7 +164,7 @@ fun UpdateShift(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        HeaderButtonPair("Update Shift", "Confirm", {})
+        HeaderButtonPair("Update Shift", "Confirm", { navigateToSingleShiftView()})
 
         CustomSpacer(10)
 
@@ -94,7 +184,7 @@ fun UpdateShift(
 
         // profile card
         AnimatedVisibility(
-            visible = !showSearchBar,
+            visible = !showDropDownMenu,
             enter = slideInVertically {
                 with(density) { -40.dp.roundToPx() }
             } + expandVertically(
@@ -120,14 +210,12 @@ fun UpdateShift(
                         .fillMaxHeight(0.6f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // commented out cause experimenting with navigating to profile
-                    // ProfileCircular(profilePictureSize = 90)
+                     ProfileCircular(profilePictureSize = 90, navigateToProfile = {})
 
                     Spacer(modifier = Modifier.width(20.dp))
 
                     Column(horizontalAlignment = Alignment.Start) {
-                        Text("Ash Misra", fontSize = 25.sp, fontWeight = FontWeight(400))
-                        Text("Age: 47", fontSize = 18.sp, fontWeight = FontWeight(300))
+                        Text(state.healthAideName, fontSize = 25.sp, fontWeight = FontWeight(400))
                         Text(
                             "Contact: +44 73689456",
                             fontSize = 18.sp,
@@ -138,7 +226,7 @@ fun UpdateShift(
 
                 Row(modifier = Modifier.align(Alignment.End)) {
                     Button(
-                        onClick = { showSearchBar = true },
+                        onClick = { updateShowDropDownMenu(showDropDownMenu) },
                         modifier = Modifier
                             .width(155.dp)
                             .height(45.dp),
@@ -156,7 +244,7 @@ fun UpdateShift(
 
         //search card
         AnimatedVisibility(
-            visible = showSearchBar,
+            visible = showDropDownMenu,
             enter = slideInVertically {
                 with(density) { -40.dp.roundToPx() }
             } + expandVertically(
@@ -187,7 +275,42 @@ fun UpdateShift(
                     )
                 )
 
-                SearchBar()
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    ExposedDropdownMenuBox(
+                        expanded = isDropDownMenuExpanded,
+                        onExpandedChange = { updateIsDropDownExpanded(isDropDownMenuExpanded) }
+                    ) {
+                        TextField(
+                            modifier = Modifier.menuAnchor(),
+                            value = selectedCarer,
+                            onValueChange = { },
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropDownMenuExpanded) }
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = isDropDownMenuExpanded,
+                            onDismissRequest = { updateIsDropDownExpanded(isDropDownMenuExpanded) },
+                            scrollState = rememberScrollState()
+                        ) {
+
+                            carersList.forEachIndexed { _, carer ->
+                                DropdownMenuItem(
+                                    text = { Text(text = carer.getFullName()) },
+                                    onClick = {
+                                        onSelectCarerChange(carer)
+                                        updateIsDropDownExpanded(isDropDownMenuExpanded)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -195,7 +318,10 @@ fun UpdateShift(
                 ) {
 
                     Button(
-                        onClick = { showSearchBar = false },
+                        onClick = {
+                            cancelCarerSelection()
+                            updateShowDropDownMenu(showDropDownMenu)
+                                  },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -209,7 +335,9 @@ fun UpdateShift(
                     }
 
                     Button(
-                        onClick = { showSearchBar = false },
+                        onClick = {
+                            confirmCarerSelection()
+                            updateShowDropDownMenu(showDropDownMenu) },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -256,7 +384,7 @@ fun UpdateShift(
                 onValueChange = {},
                 placeholder = { Text("(Optional)") },
                 modifier = modifier
-                    .fillMaxHeight(0.8f)
+                    .fillMaxHeight()
                     .fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = appColors.formTextPrimary,

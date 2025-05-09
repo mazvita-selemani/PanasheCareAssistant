@@ -34,7 +34,7 @@ import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
 @Composable
-fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: Painter? = null){
+fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: Painter? = null, navigateToSingleShiftView: () -> Unit){
 
     Box(
         modifier = modifier
@@ -130,75 +130,6 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: P
                         .padding(horizontal = 8.dp)
                         .height(IntrinsicSize.Min)
                 ) {
-                    if (shift.currentUser?.isAdmin == true) {
-                        Box(
-                            modifier = modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .padding(end = 4.dp)
-                                .background(
-                                    color = Color(0x1ACF11C9),
-                                    shape = RoundedCornerShape(15.dp)
-                                )
-                                .padding(8.dp) // internal padding
-                        ) {
-                            Column(horizontalAlignment = Alignment.Start) {
-
-                                    Text(
-                                        text = shift.shiftDate!!,
-                                        style = TextStyle(
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight(300),
-                                            color = Color(0xFFC911CF),
-                                            textAlign = TextAlign.Center,
-                                        )
-                                    )
-                                Text(
-                                    text = "10.30 AM",
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        // fontFamily = FontFamily(Font(R.font.mitr)),
-                                        fontWeight = FontWeight(300),
-                                        color = Color(0xFFC911CF),
-                                    )
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .background(
-                                    color = Color(0xFFC911CF),
-                                    shape = RoundedCornerShape(15.dp)
-                                )
-                                .padding(8.dp)
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = "Previous shifts",
-                                    style = TextStyle(
-                                        fontSize = 10.sp,
-                                        //fontFamily = FontFamily(Font(R.font)),
-                                        fontWeight = FontWeight(400),
-                                        color = Color(0xFFFFFFFF),
-                                    )
-                                )
-                                Text(
-                                    text = "5",
-                                    style = TextStyle(
-                                        fontSize = 16.sp,
-                                        //fontFamily = FontFamily(Font(R.font.mitr)),
-                                        fontWeight = FontWeight(400),
-                                        color = Color(0xFFFFFFFF),
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    if (shift.currentUser?.isAdmin != true) {
                         Box(
                             modifier = modifier
                                 .fillMaxWidth()
@@ -228,7 +159,6 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: P
                                 )
                             }
                         }
-                    }
                 }
 
 
@@ -239,10 +169,10 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: P
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 25.dp) // Match inner box padding
+                .padding(horizontal = 25.dp)
         ) {
             Button(
-                onClick = {},
+                onClick = { navigateToSingleShiftView() },
                 modifier = modifier
                     .align(Alignment.BottomEnd)
                     .border(3.dp, Color(0xFFF8E7FA), RoundedCornerShape(12.dp))
