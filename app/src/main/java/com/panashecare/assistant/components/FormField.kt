@@ -1,5 +1,6 @@
 package com.panashecare.assistant.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
@@ -26,25 +28,32 @@ fun FormField(
     modifier: Modifier,
     label: String,
     placeholder: String,
+    error: String? = null,
     horizontalPadding: Int = 32
-){
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding.dp),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = AppColors().formTextPrimary,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
-        ),
-        shape = RoundedCornerShape(20.dp),
-        placeholder = { Text(placeholder, color = Color.Gray) },
-        label = { Text(label, color = Color.Black) },
-        singleLine = true
-    )
-
+) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding.dp)) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onChange,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = AppColors().formTextPrimary,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            ),
+            shape = RoundedCornerShape(20.dp),
+            placeholder = { Text(placeholder, color = Color.Gray) },
+            label = { Text(label, color = Color.Black) },
+            singleLine = true,
+            isError = error != null
+        )
+        if (error != null) {
+            Text(text = error, color = Color.Red, fontSize = 12.sp)
+        }
+    }
 }
+
 
 @Preview(showBackground = true)
 @Composable

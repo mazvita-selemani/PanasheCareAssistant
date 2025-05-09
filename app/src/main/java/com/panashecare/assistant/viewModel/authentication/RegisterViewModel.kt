@@ -55,6 +55,9 @@ class RegisterViewModel(
 
     fun registerNewUser(user: User) {
 
+        // if information is not valid user will not be registered
+        if (!validateFields()) return
+
         // if the user is not admin any information entered in patient section of form will be erased
         if (!state.isAdmin){
             state = state.copy(patientFirstName = "", patientLastName = "")
@@ -70,6 +73,43 @@ class RegisterViewModel(
             }
         }
     }
+
+    fun validateFields(): Boolean {
+        val errors = mutableMapOf<String, String>()
+
+        if (state.firstName.isBlank() || !state.firstName[0].isUpperCase()) {
+            errors["firstName"] = "First name must start with a capital letter"
+        }
+        if (state.lastName.isBlank() || !state.lastName[0].isUpperCase()) {
+            errors["lastName"] = "Last name must start with a capital letter"
+        }
+
+        if (!state.phoneNumber.startsWith("+44")) {
+            errors["phoneNumber"] = "Phone number must start with +44"
+        }
+
+        val passwordRegex = Regex("^(?=.*[0-9])(?=.*[!@#\$%^&*()_+\\-={}:\";'<>?,./]).{8,}$")
+        if (!passwordRegex.matches(state.password)) {
+            errors["password"] = "Password must be 8+ characters with a number and a special character"
+        }
+
+        if (state.password != state.confirmPassword) {
+            errors["confirmPassword"] = "Passwords do not match"
+        }
+
+        if (state.isAdmin) {
+            if (state.patientFirstName.isBlank()) {
+                errors["patientFirstName"] = "Required for Admin"
+            }
+            if (state.patientLastName.isBlank()) {
+                errors["patientLastName"] = "Required for Admin"
+            }
+        }
+
+        state = state.copy(errors = errors)
+        return errors.isEmpty()
+    }
+
 
 
 }
@@ -88,14 +128,15 @@ class RegisterViewModelFactory(private val repository: UserRepository): ViewMode
 }
 
 
-data class RegisterUiState (
+data class RegisterUiState(
     val firstName: String = "",
     val lastName: String = "",
-    val email : String = "",
-    val patientFirstName : String = "",
-    val patientLastName : String = "",
-    val phoneNumber : String = "",
-    val isAdmin : Boolean = false,
-    val password: String ="",
-    val confirmPassword: String ="",
+    val email: String = "",
+    val patientFirstName: String = "",
+    val patientLastName: String = "",
+    val phoneNumber: String = "",
+    val isAdmin: Boolean = false,
+    val password: String = "",
+    val confirmPassword: String = "",
+    val errors: Map<String, String> = emptyMap()
 )
