@@ -55,7 +55,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository){
+fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository, navigateToEditShift: (String) -> Unit){
 
     val viewModel = viewModel<SingleShiftViewModel>(factory = SingleShiftViewModelFactory(shiftRepository))
 
@@ -66,6 +66,8 @@ fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftR
     ViewShift(
         modifier = modifier,
         state = viewModel.state,
+        navigateToEditShift = { navigateToEditShift(shiftId) },
+        shiftId = shiftId
     )
 }
 
@@ -74,6 +76,8 @@ fun ViewShift(
     modifier: Modifier = Modifier,
     userProfilePicture: Painter? = null,
     state: SingleShiftState,
+    shiftId: String,
+    navigateToEditShift: () -> Unit
 ) {
 
     val appColors = AppColors()
@@ -162,7 +166,7 @@ fun ViewShift(
             ) {
 
                 Button(
-                    onClick = {},
+                    onClick = { navigateToEditShift()},
                     modifier = Modifier
                         .width(135.dp)
                         .height(45.dp),
@@ -207,7 +211,7 @@ private fun ReadOnlyTimeShiftPicker(state: SingleShiftState){
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
-            .background(color = Color.White,shape = RoundedCornerShape(size = 18.dp))
+            .background(color = Color.White, shape = RoundedCornerShape(size = 18.dp))
             .padding(16.dp)
     ) {
         Text("Start", fontWeight = FontWeight.Bold, color = Color.Gray)

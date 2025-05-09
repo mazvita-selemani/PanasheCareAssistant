@@ -23,6 +23,7 @@ import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
 import com.panashecare.assistant.view.shiftManagement.CreateNewShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ShiftsOverviewScreen
+import com.panashecare.assistant.view.shiftManagement.UpdateShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ViewShiftScreen
 import com.panashecare.assistant.view.vitals.LogVitalsScreen
 import com.panashecare.assistant.view.vitals.ViewVitalsScreen
@@ -43,6 +44,9 @@ object Profile
 
 @Serializable
 data class SingleShiftView(val shiftId: String)
+
+@Serializable
+data class UpdateShift(val shiftId: String)
 
 @Serializable
 object ShiftList
@@ -131,7 +135,10 @@ fun AppNavigation(
         composable<ShiftList> {
             ShiftsOverviewScreen(
                 shiftRepository = shiftRepository,
-                modifier = modifier
+                modifier = modifier,
+                navigateToSingleShiftView = { shift ->
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                }
             )
         }
 
@@ -141,7 +148,24 @@ fun AppNavigation(
             ViewShiftScreen(
                 modifier = modifier,
                 shiftId = shiftId,
-                shiftRepository = shiftRepository
+                shiftRepository = shiftRepository,
+                navigateToEditShift = { mShiftId ->
+                    navController.navigate(UpdateShift(shiftId = mShiftId))
+
+                }
+            )
+
+        }
+
+        composable<UpdateShift>{ backStackEntry ->
+            val updateShift: UpdateShift = backStackEntry.toRoute()
+            val shiftId = updateShift.shiftId
+            UpdateShiftScreen(
+                modifier = modifier,
+                shiftId = shiftId,
+                shiftRepository = shiftRepository,
+                userRepository = userRepository,
+                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId)) }
             )
 
         }

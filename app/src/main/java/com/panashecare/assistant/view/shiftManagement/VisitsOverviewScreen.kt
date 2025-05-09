@@ -38,13 +38,14 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
+import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewState
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewModel
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewModelFactory
 
 @Composable
-fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier) {
+fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier, navigateToSingleShiftView: (Shift) -> Unit) {
 
     val viewModel = viewModel<ShiftsOverviewViewModel>(factory = ShiftsOverviewViewModelFactory(shiftRepository))
 
@@ -52,7 +53,11 @@ fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier) {
     ShiftsOverview(
         modifier = modifier,
         state = viewModel.state,
-        onUpcomingChange = viewModel::onUpcomingShiftsChange ,
+        onUpcomingChange = viewModel::onUpcomingShiftsChange,
+        navigateToSingleShiftView = { viewModel.state.selectedShift?.let {
+            navigateToSingleShiftView(it)
+        } },
+        onSelectedShiftFocus = viewModel::onSelectedShiftFocus,
     )
 }
 
@@ -60,7 +65,9 @@ fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier) {
 private fun ShiftsOverview(
     modifier: Modifier = Modifier,
     state: ShiftsOverviewState,
-    onUpcomingChange: (Boolean) -> Unit
+    onUpcomingChange: (Boolean) -> Unit,
+    onSelectedShiftFocus: (Shift) -> Unit,
+    navigateToSingleShiftView: () -> Unit
 ) {
 
     val appColors = AppColors()
@@ -78,7 +85,7 @@ private fun ShiftsOverview(
         CustomSpacer(10)
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -195,9 +202,10 @@ private fun ShiftsOverview(
 
 
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
             if (state.shiftsList.isNotEmpty()) {
                 LazyColumn(
@@ -212,7 +220,9 @@ private fun ShiftsOverview(
                     ) { _, shiftSingle ->
                         ShiftCard(
                             shift = shiftSingle,
-                            navigateToSingleShiftView = { TODO() },
+                            navigateToSingleShiftView = {
+                                onSelectedShiftFocus(shiftSingle)
+                                navigateToSingleShiftView() },
                         )
                     }
                 }

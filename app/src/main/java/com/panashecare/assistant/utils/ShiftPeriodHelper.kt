@@ -16,7 +16,7 @@ class ShiftPeriodHelper {
 
         val shiftStartDate = Date(shift.shiftDate)
 
-        val period = today.before(shiftStartDate)
+        val period = today.before(shiftStartDate)  // BUG: if date is today it will return false and shift will be put to past, because time is not specific
 
         if (period){
             return ShiftPeriod.FUTURE
@@ -53,7 +53,7 @@ class ShiftPeriodHelper {
             .mapNotNull { shift ->
                 try {
                     val date = LocalDate.parse(shift.shiftDate, formatter)
-                    if (date.isBefore(today)) shift to date else null
+                    if (date.isBefore(today)) shift to date else null  // BUG: date is before today does not work when shift is on same day
                 } catch (e: Exception) {
                     null
                 }

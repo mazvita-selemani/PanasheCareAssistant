@@ -46,6 +46,10 @@ class ShiftsOverviewViewModel(
         }
     }
 
+    fun onSelectedShiftFocus(shift: Shift){
+        state = state.copy(selectedShift = shift)
+    }
+
     fun onUpcomingShiftsChange(newValue: Boolean){
         state = state.copy(upcomingShifts = newValue)
 
@@ -77,5 +81,6 @@ class ShiftsOverviewViewModelFactory(private val shiftRepository: ShiftRepositor
 
 data class ShiftsOverviewState(
     val shiftsList: List<Shift> = emptyList(),
+    val selectedShift: Shift? = null,
     val upcomingShifts: Boolean = true
 )

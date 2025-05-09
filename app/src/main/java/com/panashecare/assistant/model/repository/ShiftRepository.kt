@@ -127,6 +127,19 @@ class ShiftRepository(
         Log.d("Register", "created shift successfully")
     }
 
+    fun updateShiftFields(shiftId: String, updatedFields: Map<String, Any?>, onComplete: (Boolean) -> Unit) {
+        database.child(shiftId).updateChildren(updatedFields)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("ShiftUpdate", "Updated shift fields successfully")
+                } else {
+                    Log.e("ShiftUpdate", "Failed to update shift fields: ${task.exception?.message}")
+                }
+                onComplete(task.isSuccessful)
+            }
+    }
+
+
 }
 
 sealed class ShiftResult {
