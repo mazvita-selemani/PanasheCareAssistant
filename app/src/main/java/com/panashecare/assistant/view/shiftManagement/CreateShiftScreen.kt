@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
+import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.components.ShiftTimePicker
 import com.panashecare.assistant.model.objects.Shift
@@ -91,7 +92,7 @@ fun CreateNewShiftScreen(
     )
 
     CreateNewShift(
-        modifier =  modifier,
+        modifier = modifier,
         state = viewModel.state,
         updateStartDate = viewModel::updateStartDate,
         updateEndDate = viewModel::updateEndDate,
@@ -107,10 +108,10 @@ fun CreateNewShiftScreen(
         },
         isExpanded = viewModel.state.isExpanded,
         onExpandedChange = viewModel::updateIsExpanded,
-        selectedText = state.selectedCarer?.let { "${it.firstName} ${it.lastName}" } ?: "",
+        selectedText = state.selectedCarer?.getFullName() ?: "",
         carersList = state.carers ?: emptyList(),
-
-        onSelectTextChange = viewModel::updateSelectedCarer
+        onSelectTextChange = viewModel::updateSelectedCarer,
+        updateChecked = viewModel::updateChecked
     )
 }
 
@@ -128,6 +129,7 @@ fun CreateNewShift(
     showStartTimePicker: (Boolean) -> Unit,
     showEndDatePicker: (Boolean) -> Unit,
     showEndTimePicker: (Boolean) -> Unit,
+    updateChecked: (Boolean) -> Unit,
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     selectedText: String,
@@ -161,7 +163,8 @@ fun CreateNewShift(
             showStartDatePicker = showStartDatePicker,
             showStartTimePicker = showStartTimePicker,
             showEndDatePicker = showEndDatePicker,
-            showEndTimePicker = showEndTimePicker
+            showEndTimePicker = showEndTimePicker,
+            updateChecked = updateChecked
         )
 
         CustomSpacer(10)
@@ -186,25 +189,24 @@ fun CreateNewShift(
 
             CustomSpacer(5)
 
-            // SearchBar()
-
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Log.d("It works", "$carersList")
-
                 ExposedDropdownMenuBox(
                     expanded = isExpanded,
                     onExpandedChange = { onExpandedChange(isExpanded) }
                 ) {
-                    TextField(
-                        modifier = Modifier.menuAnchor(),
-                        value = selectedText ?: "",
-                        onValueChange = { },
+                    FormField(
+                        value = selectedText,
+                        onChange = { },
                         readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) }
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                        modifier = Modifier.menuAnchor(),
+                        error = state.errors["selectedCarer"],
+                        label = "",
+                        placeholder = ""
                     )
 
                     ExposedDropdownMenu(
@@ -275,5 +277,5 @@ fun PreviewCreateNewShift() {
     val userRepository = UserRepository()
     val shiftRepository = ShiftRepository()
 
-    //  CreateNewShiftScreen(userRepository, shiftRepository)
+    CreateNewShiftScreen(Modifier, userRepository, shiftRepository, {})
 }

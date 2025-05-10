@@ -17,4 +17,6 @@ interface ShiftScheduleState {
     val endDate: Long?
     @OptIn(ExperimentalMaterial3Api::class)
     val endTime: TimePickerState?
+    val errors: Map<String, String>
+    val isChecked: Boolean
 }

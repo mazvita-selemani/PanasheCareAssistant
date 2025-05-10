@@ -177,7 +177,8 @@ fun UpdateShift(
             showStartDatePicker = showStartDatePicker,
             showStartTimePicker = showStartTimePicker,
             showEndDatePicker = showEndDatePicker,
-            showEndTimePicker = showEndTimePicker
+            showEndTimePicker = showEndTimePicker,
+            updateChecked = { TODO() }
         )
 
         CustomSpacer(10)

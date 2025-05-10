@@ -186,5 +186,7 @@ data class UpdateShiftState @OptIn(ExperimentalMaterial3Api::class) constructor(
     override val startDate: Long? = null,
     override val startTime: TimePickerState? = null,
     override val endDate: Long? = null,
-    override val endTime: TimePickerState? = null
+    override val endTime: TimePickerState? = null,
+    override val errors: Map<String, String> = emptyMap(),
+    override val isChecked: Boolean = false
 ) : ShiftScheduleState

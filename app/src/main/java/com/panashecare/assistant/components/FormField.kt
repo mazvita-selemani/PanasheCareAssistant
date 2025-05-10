@@ -28,7 +28,9 @@ fun FormField(
     label: String,
     placeholder: String,
     error: String? = null,
-    horizontalPadding: Int = 32
+    horizontalPadding: Int = 32,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    readOnly: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding.dp)) {
         OutlinedTextField(
@@ -45,7 +47,9 @@ fun FormField(
             placeholder = { Text(placeholder, color = Color.Gray) },
             label = { Text(label, color = Color.Black) },
             singleLine = true,
-            isError = error != null
+            readOnly = readOnly,
+            isError = error != null,
+            trailingIcon = trailingIcon
         )
         if (error != null) {
             Text(text = error, color = Color.Red, fontSize = 12.sp)
