@@ -28,6 +28,9 @@ class UpdateShiftViewModel(
     var state by mutableStateOf(UpdateShiftState())
         private set
 
+
+    lateinit var initialState: UpdateShiftState
+
     init {
         getCarers()
     }
@@ -56,6 +59,11 @@ class UpdateShiftViewModel(
         state = state.copy(endTime = convertStringToTimePickerState(shift.shiftEndTime!!))
         state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
 
+        initialState = state
+
+        Log.d("Shift Details", "This is the state manager $state")
+        Log.d("Shift Details", "This is the copy $initialState")
+
     }
 
     private fun convertStringToTimePickerState(timeString: String): TimePickerState {
@@ -73,21 +81,85 @@ class UpdateShiftViewModel(
         return zonedDateTime
     }
 
-    fun updateShift(shiftId: String, updatedFields: Map<String, Any?>) = viewModelScope.launch {
-        shiftRepository.updateShiftFields(
-            shiftId = shiftId, updatedFields = updatedFields
-        ) { success ->
-            if (success) {
-                Log.d("Firebase", "Shift updated successfully!")
+    fun updateShift(shiftId: String, updatedFields: Map<String, Any?>) {
 
-            } else {
-                Log.e("Firebase", "Shift update failed.")
+        if (!validateFields()) return
+
+        viewModelScope.launch {
+            shiftRepository.updateShiftFields(
+                shiftId = shiftId, updatedFields = updatedFields
+            ) { success ->
+                if (success) {
+                    Log.d("Firebase", "Shift updated successfully!")
+
+                } else {
+                    Log.e("Firebase", "Shift update failed.")
+                }
             }
         }
     }
 
+    private fun validateFields(): Boolean {
+        val errors = mutableMapOf<String, String>()
+
+        // Time pickers (null or unselected times)
+        if (state.startTime == null) {
+            errors["startTime"] = "Please select start time"
+        }
+
+        if (state.endTime == null) {
+            errors["endTime"] = "Please select end time"
+        }
+
+        // Date pickers (null means not selected)
+        if (state.startDate == null) {
+            errors["startDate"] = "Please select start date"
+        }
+
+        if (state.endDate == null) {
+            errors["endDate"] = "Please select end date"
+        }
+
+        if (state.showDropDownMenu) {
+            if(state.selectedCarer == null) {
+                errors["selectedCarer"] = "Please select a carer"
+            }
+        }
+
+
+        // Check if end date is before start date
+        if (state.startDate != null && state.endDate != null) {
+            if (state.endDate!! < state.startDate!!) {
+                errors["endDate"] = "End date not valid"
+            }
+        }
+
+        state = state.copy(errors = errors)
+        return errors.isEmpty()
+    }
+
+    private fun onStateChange() {
+        if(state == initialState){
+            state = state.copy(haveDetailsChanged = false)
+            return
+        }
+
+        state = state.copy(haveDetailsChanged = true)
+    }
+
+    fun updateChecked(newValue: Boolean) {
+        state = state.copy(isChecked = newValue)
+
+        if (state.isChecked) {
+            state = state.copy(endDate = state.startDate)
+        }
+
+        onStateChange()
+    }
+
     fun updateIsExpanded(newValue: Boolean) {
         state = state.copy(isDropDownMenuExpanded = !newValue)
+        onStateChange()
     }
 
     fun updateShowDropDownMenu(newValue: Boolean) {
@@ -97,19 +169,23 @@ class UpdateShiftViewModel(
 
     fun updateSelectedCarer(user: User) {
         state = state.copy(selectedCarer = user)
+        onStateChange()
     }
 
     fun confirmSelectedCarer() {
         state = state.copy(healthAideName = state.selectedCarer?.getFullName()!!)
+        onStateChange()
     }
 
     fun cancelSelectedCarer(shift: Shift) {
         state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
+        onStateChange()
     }
 
 
     fun updateNotes(newNotes: String) {
         state = state.copy(notes = newNotes)
+        onStateChange()
     }
 
 
@@ -135,21 +211,25 @@ class UpdateShiftViewModel(
 
     fun updateStartDate(dateInMillis: Long) {
         state = state.copy(startDate = dateInMillis)
+        onStateChange()
     }
 
 
     fun updateStartTime(timePickerState: TimePickerState) {
         state = state.copy(startTime = timePickerState)
+        onStateChange()
     }
 
 
     fun updateEndDate(dateInMillis: Long) {
         state = state.copy(endDate = dateInMillis)
+        onStateChange()
     }
 
 
     fun updateEndTime(timePickerState: TimePickerState) {
         state = state.copy(endTime = timePickerState)
+        onStateChange()
     }
 
 }
@@ -188,5 +268,6 @@ data class UpdateShiftState @OptIn(ExperimentalMaterial3Api::class) constructor(
     override val endDate: Long? = null,
     override val endTime: TimePickerState? = null,
     override val errors: Map<String, String> = emptyMap(),
-    override val isChecked: Boolean = false
+    override val isChecked: Boolean = false,
+    val haveDetailsChanged: Boolean = false
 ) : ShiftScheduleState

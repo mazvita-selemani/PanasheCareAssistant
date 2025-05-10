@@ -124,7 +124,8 @@ fun UpdateShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: Shif
         carersList = state.carers ?: emptyList(),
         onSelectCarerChange = viewModel::updateSelectedCarer,
         confirmCarerSelection = { viewModel.confirmSelectedCarer() },
-        cancelCarerSelection = { viewModel.cancelSelectedCarer(state.originalShift!!) }
+        cancelCarerSelection = { viewModel.cancelSelectedCarer(state.originalShift!!) },
+        updateChecked = viewModel::updateChecked
     )
 }
 
@@ -151,6 +152,7 @@ fun UpdateShift(
     selectedCarer: String,
     carersList: List<User>,
     onSelectCarerChange: (User) -> Unit,
+    updateChecked: (Boolean) -> Unit
 ) {
     val appColors = AppColors()
     val scrollState = rememberScrollState()
@@ -178,7 +180,7 @@ fun UpdateShift(
             showStartTimePicker = showStartTimePicker,
             showEndDatePicker = showEndDatePicker,
             showEndTimePicker = showEndTimePicker,
-            updateChecked = { TODO() }
+            updateChecked = updateChecked
         )
 
         CustomSpacer(10)
@@ -348,7 +350,7 @@ fun UpdateShift(
                             contentColor = Color.White
                         )
                     ) {
-                        Text("Confirm", fontSize = 16.sp, fontWeight = FontWeight(400))
+                        Text(text = if(state.haveDetailsChanged)"Confirm" else "Back", fontSize = 16.sp, fontWeight = FontWeight(400))
                     }
 
                 }
@@ -401,5 +403,10 @@ fun UpdateShift(
 @Preview
 @Composable
 fun PreviewUpdateShift() {
-    // UpdateShift()
+    UpdateShiftScreen(
+        modifier = Modifier,
+        shiftId = "-OPuP-zzlMlFjI1WdRF-",
+        shiftRepository = ShiftRepository(),
+        userRepository = UserRepository(),
+        navigateToSingleShiftView = {})
 }
