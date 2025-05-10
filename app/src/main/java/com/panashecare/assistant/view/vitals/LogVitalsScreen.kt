@@ -126,7 +126,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["heartRateRecord"]
             )
 
 
@@ -148,7 +149,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["oxygenSaturation"]
             )
 
             CustomSpacer(5)
@@ -169,7 +171,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["bloodPressure"]
             )
 
         }

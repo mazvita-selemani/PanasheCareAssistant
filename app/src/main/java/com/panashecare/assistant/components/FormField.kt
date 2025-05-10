@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.sp
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormField(
     value: String,

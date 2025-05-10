@@ -70,7 +70,7 @@ fun LoginScreen(
                             onAuthenticated(it)
                             subscribeUserToShiftNotifications(it)
                             subscribeUserToVitalLogNotifications()
-                            viewModel.scheduleMedicationNotifications("-OPVVDqxQGr8RPH3dxzO", context) //hardcoded prescriptionId
+                          //  viewModel.scheduleMedicationNotifications("-OPVVDqxQGr8RPH3dxzO", context) //hardcoded prescriptionId
                         } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
                     }
                 }
