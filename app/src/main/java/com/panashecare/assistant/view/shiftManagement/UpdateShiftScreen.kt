@@ -1,6 +1,5 @@
 package com.panashecare.assistant.view.shiftManagement
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -35,10 +34,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,10 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
+import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.ShiftTimePicker
-import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
@@ -64,11 +59,22 @@ import com.panashecare.assistant.viewModel.shiftManagement.UpdateShiftViewModelF
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository, userRepository: UserRepository, navigateToSingleShiftView: () -> Unit) {
+fun UpdateShiftScreen(
+    modifier: Modifier,
+    shiftId: String,
+    shiftRepository: ShiftRepository,
+    userRepository: UserRepository,
+    navigateToSingleShiftView: () -> Unit
+) {
 
-    val viewModel = viewModel<UpdateShiftViewModel>(factory = UpdateShiftViewModelFactory(shiftRepository = shiftRepository, repository = userRepository))
+    val viewModel = viewModel<UpdateShiftViewModel>(
+        factory = UpdateShiftViewModelFactory(
+            shiftRepository = shiftRepository,
+            repository = userRepository
+        )
+    )
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         viewModel.getShiftById(shiftId)
     }
 
@@ -113,8 +119,10 @@ fun UpdateShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: Shif
         showEndDatePicker = viewModel::showEndDatePicker,
         showEndTimePicker = viewModel::showEndTimePicker,
         navigateToSingleShiftView = {
-            navigateToSingleShiftView()
             viewModel.updateShift(shiftId = shiftId, updatedFields = updatedFields)
+            if(viewModel.validateFields()) {
+                navigateToSingleShiftView()
+            }
         },
         showDropDownMenu = state.showDropDownMenu,
         updateShowDropDownMenu = viewModel::updateShowDropDownMenu,
@@ -166,7 +174,7 @@ fun UpdateShift(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        HeaderButtonPair("Update Shift", "Confirm", { navigateToSingleShiftView()})
+        HeaderButtonPair("Update Shift", "Confirm", { navigateToSingleShiftView() })
 
         CustomSpacer(10)
 
@@ -213,7 +221,7 @@ fun UpdateShift(
                         .fillMaxHeight(0.6f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                     ProfileCircular(profilePictureSize = 90, navigateToProfile = {})
+                    ProfileCircular(profilePictureSize = 90, navigateToProfile = {})
 
                     Spacer(modifier = Modifier.width(20.dp))
 
@@ -287,12 +295,15 @@ fun UpdateShift(
                         expanded = isDropDownMenuExpanded,
                         onExpandedChange = { updateIsDropDownExpanded(isDropDownMenuExpanded) }
                     ) {
-                        TextField(
-                            modifier = Modifier.menuAnchor(),
+                        FormField(
                             value = selectedCarer,
-                            onValueChange = { },
+                            onChange = { },
                             readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropDownMenuExpanded) }
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropDownMenuExpanded) },
+                            modifier = Modifier.menuAnchor(),
+                            error = state.errors["selectedCarer"],
+                            label = "",
+                            placeholder = ""
                         )
 
                         ExposedDropdownMenu(
@@ -324,7 +335,7 @@ fun UpdateShift(
                         onClick = {
                             cancelCarerSelection()
                             updateShowDropDownMenu(showDropDownMenu)
-                                  },
+                        },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -340,7 +351,8 @@ fun UpdateShift(
                     Button(
                         onClick = {
                             confirmCarerSelection()
-                            updateShowDropDownMenu(showDropDownMenu) },
+                            updateShowDropDownMenu(showDropDownMenu)
+                        },
                         modifier = Modifier
                             .width(150.dp)
                             .height(45.dp),
@@ -350,7 +362,11 @@ fun UpdateShift(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(text = if(state.haveDetailsChanged)"Confirm" else "Back", fontSize = 16.sp, fontWeight = FontWeight(400))
+                        Text(
+                            text = if (state.haveDetailsChanged) "Confirm" else "Back",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight(400)
+                        )
                     }
 
                 }

@@ -38,7 +38,6 @@ class UpdateShiftViewModel(
     private fun getCarers() = viewModelScope.launch {
         userRepository.getCarers().collect { carers ->
             state = state.copy(carers = carers)
-            Log.d("Carers Loading", "You have a list of ${state.carers?.size} carers")
         }
 
     }
@@ -99,7 +98,7 @@ class UpdateShiftViewModel(
         }
     }
 
-    private fun validateFields(): Boolean {
+    fun validateFields(): Boolean {
         val errors = mutableMapOf<String, String>()
 
         // Time pickers (null or unselected times)

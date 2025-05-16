@@ -104,7 +104,9 @@ fun CreateNewShiftScreen(
         showEndTimePicker = viewModel::showEndTimePicker,
         createShift = {
             viewModel.createShift(shift)
-            navigateToHome()
+            if(viewModel.validateFields()) {
+                navigateToHome()
+            }
         },
         isExpanded = viewModel.state.isExpanded,
         onExpandedChange = viewModel::updateIsExpanded,
@@ -217,7 +219,7 @@ fun CreateNewShift(
 
                         carersList.forEachIndexed { _, carer ->
                             DropdownMenuItem(
-                                text = { Text(text = "${carer.firstName} ${carer.lastName}") },
+                                text = { Text(text = carer.getFullName()) },
                                 onClick = {
                                     onSelectTextChange(carer)
                                     onExpandedChange(isExpanded)

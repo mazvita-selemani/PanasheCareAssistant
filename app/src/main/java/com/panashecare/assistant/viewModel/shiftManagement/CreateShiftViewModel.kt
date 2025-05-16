@@ -54,7 +54,7 @@ class CreateShiftViewModel(
     }
 
 
-    private fun validateFields(): Boolean {
+    fun validateFields(): Boolean {
         val errors = mutableMapOf<String, String>()
 
         // Time pickers (null or unselected times)
