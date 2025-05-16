@@ -3,35 +3,33 @@ package com.panashecare.assistant.view.medication
 import MedicationDetailsCard
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,7 +38,6 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.model.objects.Medication
-import com.panashecare.assistant.model.objects.MedicationWithDosage
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
@@ -49,9 +46,21 @@ import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerView
 import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerViewModelFactory
 
 @Composable
-fun DailyMedicationTrackerScreen(modifier: Modifier = Modifier, prescriptionRepository: PrescriptionRepository, dailyMedicationLogRepository: DailyMedicationLogRepository, medicationRepository: MedicationRepository, navigateToStockManagement: ()-> Unit){
+fun DailyMedicationTrackerScreen(
+    modifier: Modifier = Modifier,
+    prescriptionRepository: PrescriptionRepository,
+    dailyMedicationLogRepository: DailyMedicationLogRepository,
+    medicationRepository: MedicationRepository,
+    navigateToStockManagement: () -> Unit
+) {
 
-    val viewModel = viewModel<DailyMedicationTrackerViewModel>(factory = DailyMedicationTrackerViewModelFactory(prescriptionRepository, dailyMedicationLogRepository, medicationRepository))
+    val viewModel = viewModel<DailyMedicationTrackerViewModel>(
+        factory = DailyMedicationTrackerViewModelFactory(
+            prescriptionRepository,
+            dailyMedicationLogRepository,
+            medicationRepository
+        )
+    )
 
     DailyMedicationTracker(
         modifier = modifier,
@@ -81,27 +90,28 @@ fun DailyMedicationTracker(
     onEveningFirstCheckedChange: (Boolean) -> Unit,
     onEveningSecondCheckedChange: (Boolean) -> Unit,
     getMedicationById: (String) -> Medication?,
-    navigateToStockManagement: ()-> Unit
+    navigateToStockManagement: () -> Unit
 
-    ){
+) {
 
     val appColors = AppColors()
+
 
     Column(
         modifier = modifier.padding(15.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
 
-    ){
+    ) {
         HeaderButtonPair(
             pageHeader = "Daily Medication Tracker",
             headerButton = "Submit Log",
             onNavigationClick = { onSubmitLog("evening") }
         )
 
-        if(true /*todo replace with admin check*/){
+        if (true /*todo replace with admin check*/) {
             Row(
-                modifier = modifier
+                modifier = Modifier
                     .padding(vertical = 10.dp)
                     .fillMaxWidth()
                     .height(71.dp)
@@ -110,7 +120,7 @@ fun DailyMedicationTracker(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
-                    modifier = modifier
+                    modifier = Modifier
                         .padding(end = 10.dp)
                         .background(
                             color = Color.White,
@@ -131,14 +141,14 @@ fun DailyMedicationTracker(
                         fontSize = 13.sp,
                     )
                 )
-                Spacer(modifier = modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     onClick = {
                         navigateToStockManagement()
                     },
                     modifier = Modifier
-                        .width(190.dp)
+                        .width(150.dp)
                         .height(45.dp),
                     shape = RoundedCornerShape(size = 47.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -152,21 +162,17 @@ fun DailyMedicationTracker(
         }
 
 
-        Text(
-            text = "Morning ${state.prescriptions?.morningTime}",
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight(400),
-            )
-        )
-
-        if (state.prescriptions?.morningMedication?.isNotEmpty() == true) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-            ) {
-                state.prescriptions.morningMedication.forEachIndexed { index, _ ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Text("Morning ${state.prescriptions?.morningTime}", fontSize = 20.sp)
+            }
+            if (state.prescriptions?.morningMedication?.isNotEmpty() == true) {
+                itemsIndexed(state.prescriptions.morningMedication) { index, _ ->
                     MedicationDetailsCard(
                         medicalList = state.prescriptions.morningMedication,
                         isChecked = if (index == 0) state.isMorningFirstChecked else state.isMorningSecondChecked,
@@ -175,31 +181,17 @@ fun DailyMedicationTracker(
                         getMedicationById = getMedicationById
                     )
                 }
+            } else {
+                item {
+                    Text("No prescriptions listed")
+                }
             }
-        } else {
-            Box(
-                modifier = Modifier,
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "No prescriptions listed")
+
+            item {
+                Text("Afternoon ${state.prescriptions?.afternoonTime}", fontSize = 20.sp)
             }
-        }
-
-        Text(
-            text = "Afternoon ${state.prescriptions?.afternoonTime}",
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight(400),
-            )
-        )
-
-        if (state.prescriptions?.afternoonMedication?.isNotEmpty() == true) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .fillMaxWidth()
-            ) {
-                state.prescriptions.afternoonMedication.forEachIndexed { index, _ ->
+            if (state.prescriptions?.afternoonMedication?.isNotEmpty() == true) {
+                itemsIndexed(state.prescriptions.afternoonMedication) { index, _ ->
                     MedicationDetailsCard(
                         medicalList = state.prescriptions.afternoonMedication,
                         isChecked = if (index == 0) state.isAfternoonFirstChecked else state.isAfternoonSecondChecked,
@@ -207,51 +199,30 @@ fun DailyMedicationTracker(
                         index = index,
                         getMedicationById = getMedicationById
                     )
-
+                }
+            } else {
+                item {
+                    Text("No prescriptions listed")
                 }
             }
-        } else {
-            // Use weight to center the text properly
-            Box(
-                modifier = Modifier,
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "No prescriptions listed")
+
+            item {
+                Text("Night ${state.prescriptions?.eveningTime}", fontSize = 20.sp)
             }
-        }
-
-        Text(
-            text = "Nighty ${state.prescriptions?.eveningTime}",
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight(400),
-            )
-        )
-
-        if (state.prescriptions?.eveningMedication?.isNotEmpty() == true) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .fillMaxWidth()
-            ) {
-                state.prescriptions.eveningMedication.forEachIndexed { index, _ ->
-
-                        MedicationDetailsCard(
-                            medicalList = state.prescriptions.eveningMedication,
-                            isChecked = if (index == 0) state.isEveningFirstChecked else state.isEveningSecondChecked,
-                            onCheckedChange = if (index == 0) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
-                            index = index,
-                            getMedicationById = getMedicationById
-                        )
-
+            if (state.prescriptions?.eveningMedication?.isNotEmpty() == true) {
+                itemsIndexed(state.prescriptions.eveningMedication) { index, _ ->
+                    MedicationDetailsCard(
+                        medicalList = state.prescriptions.eveningMedication,
+                        isChecked = if (index == 0) state.isEveningFirstChecked else state.isEveningSecondChecked,
+                        onCheckedChange = if (index == 0) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
+                        index = index,
+                        getMedicationById = getMedicationById
+                    )
                 }
-            }
-        } else {
-            Box(
-                modifier = Modifier.fillMaxHeight(0.3f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "No prescriptions listed")
+            } else {
+                item {
+                    Text("No prescriptions listed")
+                }
             }
         }
 
@@ -260,6 +231,11 @@ fun DailyMedicationTracker(
 
 @Preview
 @Composable
-fun PreviewTracker(){
-    //DailyMedicationTrackerScreen(PrescriptionRepository(), DailyMedicationLogRepository(), MedicationRepository())
+fun PreviewTracker() {
+    DailyMedicationTrackerScreen(
+        Modifier,
+        PrescriptionRepository(),
+        DailyMedicationLogRepository(),
+        MedicationRepository(),
+        {})
 }

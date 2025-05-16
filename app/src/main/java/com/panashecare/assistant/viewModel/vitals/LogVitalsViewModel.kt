@@ -45,7 +45,7 @@ class LogVitalsViewModel(
         }
     }
 
-    private fun validateFields(): Boolean {
+    fun validateFields(): Boolean {
         val errors = mutableMapOf<String, String>()
 
         // Oxygen Saturation: 0–100 (%)
