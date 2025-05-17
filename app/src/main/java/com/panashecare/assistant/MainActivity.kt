@@ -47,7 +47,7 @@ sealed class NavDestination(val title: String, val route: Any, val routeAsString
     object Home: NavDestination(title = "Home", route = com.panashecare.assistant.Home, routeAsString= "com.panashecare.assistant.Home", icon = Icons.Default.Home)
     object Vitals: NavDestination(title = "Vitals", route = VitalsList, routeAsString = "com.panashecare.assistant.VitalsList", icon = Icons.Filled.Favorite)
     object Meds: NavDestination(title = "Meds", route = DailyMedicationTracker, routeAsString = "com.panashecare.assistant.DailyMedicationTracker", icon = Icons.Default.Info)
-    object Profile: NavDestination(title = "Profile", route = com.panashecare.assistant.SignOut, routeAsString = "com.panashecare.assistant.SignOut",  icon = Icons.Default.Person)
+    object Profile: NavDestination(title = "Profile", route = com.panashecare.assistant.Profile, routeAsString = "com.panashecare.assistant.Profile",  icon = Icons.Default.Person)
 }
 
 class MainActivity : ComponentActivity() {
