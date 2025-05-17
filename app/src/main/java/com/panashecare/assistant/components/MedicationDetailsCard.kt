@@ -39,6 +39,7 @@ fun MedicationDetailsCard(
     getMedicationById: (String) -> Medication?,
     isChecked: Boolean = false,
     onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean,
     index: Int
 ) {
 
@@ -100,6 +101,7 @@ fun MedicationDetailsCard(
                     color = Color.Black,
                     shape = CircleShape
                 )
+                .background(if(!enabled) Color.LightGray else Color.Transparent)
                 .clickable { onCheckedChange(!isChecked) },
             contentAlignment = Alignment.Center
         ) {
@@ -109,8 +111,10 @@ fun MedicationDetailsCard(
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color.Transparent,
                     uncheckedColor = Color.Transparent,
-                    checkmarkColor = Color.Black
+                    checkmarkColor = Color.Black,
+                    disabledUncheckedColor = Color.Transparent,
                 ),
+                enabled = enabled,
                 modifier = Modifier
                     .size(20.dp)
                     .background(Color.White, CircleShape)

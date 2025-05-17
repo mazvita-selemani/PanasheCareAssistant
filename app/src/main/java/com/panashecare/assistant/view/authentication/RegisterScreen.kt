@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -131,7 +132,8 @@ fun Register(
             onChange = { onFirstNameChange(it) },
             label = "First Name",
             placeholder = "Enter your first name",
-            modifier = modifier
+            modifier = modifier,
+            error = state.errors["firstName"]
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -141,7 +143,8 @@ fun Register(
             onChange = { onLastNameChange(it) },
             label = "Last Name",
             placeholder = "Enter your last name",
-            modifier = modifier
+            modifier = modifier,
+            error = state.errors["lastName"]
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -151,7 +154,20 @@ fun Register(
             onChange = { onEmailChange(it) },
             label = "Email Address",
             placeholder = "Enter your email",
-            modifier = modifier
+            modifier = modifier,
+            error = state.errors["email"]
+
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        FormField(
+            value = state.phoneNumber,
+            onChange = { onPhoneNumberChange(it) },
+            label = "Phone number",
+            placeholder = "Enter your phone number",
+            modifier = modifier,
+            error = state.errors["phoneNumber"]
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -178,15 +194,6 @@ fun Register(
         }
 
         if (state.isAdmin) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            FormField(
-                value = state.phoneNumber,
-                onChange = { onPhoneNumberChange(it) },
-                label = "Phone number",
-                placeholder = "Enter your phone number",
-                modifier = modifier
-            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -195,7 +202,8 @@ fun Register(
                 onChange = { onPatientFirstNameChange(it) },
                 label = "Patient last name",
                 placeholder = "Patient last name",
-                modifier = modifier
+                modifier = modifier,
+                error = state.errors["patientFirstName"]
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -205,7 +213,8 @@ fun Register(
                 onChange = { onPatientLastNameChange(it) },
                 label = "Patient last name",
                 placeholder = "Patient last name",
-                modifier = modifier
+                modifier = modifier,
+                error = state.errors["patientLastName"]
             )
         }
 
@@ -216,7 +225,8 @@ fun Register(
             onChange = { onPasswordChange(it) },
             label = "Password",
             placeholder = "Enter your password",
-            modifier = modifier
+            modifier = modifier,
+            error = state.errors["password"]
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -226,7 +236,8 @@ fun Register(
             onChange = { onConfirmPasswordChange(it) },
             label = "Confirm Password",
             placeholder = "Confirm your password",
-            modifier = modifier
+            modifier = modifier,
+            error = state.errors["confirmPassword"]
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -268,42 +279,9 @@ fun Register(
     }
 }
 
-/*@Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
-fun RegisterPreview() {
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var patientFirstName by remember { mutableStateOf("") }
-    var patientLastName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var checked by remember { mutableStateOf(false) }
+fun PreviewRegister() {
+    RegisterScreen(UserRepository(), {}, AuthViewModel())
+}
 
-
-
-    PanasheCareAssistantTheme {
-        Register(
-            firstName = firstName,
-            lastName = lastName,
-            email = email,
-            password = password,
-            confirmPassword = confirmPassword,
-            onFirstNameChange = { firstName = it },
-            onLastNameChange = { lastName = it },
-            onEmailChange = { email = it },
-            onPasswordChange = { password = it },
-            onConfirmPasswordChange = { confirmPassword = it },
-            onRegisterClick = { *//* Do something *//* },
-            phoneNumber = phoneNumber,
-            patientFirstName = patientFirstName,
-            patientLastName = patientLastName,
-            onPhoneNumberChange = { phoneNumber = it },
-            onPatientFirstNameChange = { patientFirstName = it },
-            onPatientLastNameChange = { patientLastName = it },
-            checked = checked,
-            onAdminChecked = {checked = it},
-        )
-    }
-}*/

@@ -69,7 +69,8 @@ fun LogVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepos
         updateBloodPressureRecord = viewModel::updateBloodPressureRecord,
         updateHeartRateRecord = viewModel::updateHeartRate,
         submitLog = { viewModel.submitLog(vitals) },
-        navigateToVitalsList = navigateToVitalsList
+        navigateToVitalsList = navigateToVitalsList,
+        validateFields = { viewModel.validateFields() }
     )
 }
 
@@ -80,6 +81,7 @@ fun LogVitals(
     updateOxygenSaturationRecord: (String) -> Unit,
     updateBloodPressureRecord: (String) -> Unit,
     updateHeartRateRecord: (String) -> Unit,
+    validateFields: () -> Boolean,
     submitLog: () -> Unit,
     navigateToVitalsList: () -> Unit
 ) {
@@ -100,7 +102,7 @@ fun LogVitals(
             modifier = Modifier
                 .align(Alignment.Start)
                 .fillMaxWidth()
-                .fillMaxHeight(.5f)
+                .fillMaxHeight()
                 .background(
                     color = appColors.surface,
                     shape = RoundedCornerShape(size = 18.dp)
@@ -126,7 +128,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["heartRateRecord"]
             )
 
 
@@ -148,7 +151,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["oxygenSaturation"]
             )
 
             CustomSpacer(5)
@@ -169,7 +173,8 @@ fun LogVitals(
                 modifier = Modifier,
                 label = "",
                 placeholder = "",
-                horizontalPadding = 0
+                horizontalPadding = 0,
+                error = state.errors["bloodPressure"]
             )
 
         }
@@ -202,7 +207,7 @@ fun LogVitals(
                 onValueChange = {},
                 placeholder = { Text("(Optional)") },
                 modifier = modifier
-                    .fillMaxHeight(0.8f)
+                    .fillMaxHeight()
                     .fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = appColors.formTextPrimary,
@@ -219,7 +224,9 @@ fun LogVitals(
             Button(
                 onClick = {
                     submitLog()
-                    navigateToVitalsList()
+                    if(validateFields()) {
+                        navigateToVitalsList()
+                    }
                 },
                 modifier = Modifier
                     .width(190.dp)

@@ -107,6 +107,16 @@ class UserRepository(
         }
     }
 
+    fun getUserById(id: String, callback: (User?) -> Unit) {
+        database.get().addOnSuccessListener { snapshot ->
+            val matchedUser = snapshot.children.mapNotNull { it.getValue(User::class.java) }
+                .find { it.id == id }
+            callback(matchedUser)
+        }.addOnFailureListener {
+            callback(null)
+        }
+    }
+
 
     fun saveUser(user: User, onComplete: (Boolean) -> Unit) {
         Log.d("Register", "About to save user")
@@ -124,9 +134,8 @@ class UserRepository(
         database.child("$id")
     }
 
-    fun updateUser(id: Int, field: String, newValue: String) {
-        database.child(id.toString()).child(field).setValue(newValue)
+    fun updateUser(id: String, fields: Map<String, String>) {
+        val updates = fields.mapValues { it.value }
+        database.child(id).updateChildren(updates)
     }
-
-
 }

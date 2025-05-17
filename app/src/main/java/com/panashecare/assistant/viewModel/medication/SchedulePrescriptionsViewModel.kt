@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 
 class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepository, private val medicationRepository: MedicationRepository, ) : ViewModel() {
@@ -67,6 +69,68 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
         }
     }
 
+    fun validateFields(): Boolean {
+        val errors = mutableMapOf<String, String>()
+
+        // Morning
+        val morningTime = screenState.value.morning.time
+        if (morningTime.isNullOrEmpty() || !validateTime(morningTime)) {
+            errors["morningTime"] = "Please enter a valid morning time (HH:mm)"
+        } else if (!isTimeInRange(morningTime, 6, 11)) {
+            errors["morningTime"] = "Morning time must be between 06:00 and 11:59"
+        }
+
+        if (screenState.value.morning.prescriptionDetails.any { it.selectedMedication.name == "Select" }) {
+            errors["morningMedication"] = "Please select a medication for the morning"
+        }
+        if (screenState.value.morning.prescriptionDetails.any { it.dosage == 0 }) {
+            errors["morningDosage"] = "Please enter a dosage for the morning medication(s)"
+        }
+        if (screenState.value.morning.prescriptionDetails.any { it.selectedUnits.isEmpty() }) {
+            errors["morningUnits"] = "Please select units for the morning medication(s)"
+        }
+
+        // Afternoon
+        val afternoonTime = screenState.value.afternoon.time
+        if (afternoonTime.isNullOrEmpty() || !validateTime(afternoonTime)) {
+            errors["afternoonTime"] = "Please enter a valid afternoon time (HH:mm)"
+        } else if (!isTimeInRange(afternoonTime, 12, 16)) {
+            errors["afternoonTime"] = "Afternoon time must be between 12:00 and 16:59"
+        }
+
+        if (screenState.value.afternoon.prescriptionDetails.any { it.selectedMedication.name == "Select" }) {
+            errors["afternoonMedication"] = "Please select a medication for the afternoon"
+        }
+        if (screenState.value.afternoon.prescriptionDetails.any { it.dosage == 0 }) {
+            errors["afternoonDosage"] = "Please enter a dosage for the afternoon medication(s)"
+        }
+        if (screenState.value.afternoon.prescriptionDetails.any { it.selectedUnits.isEmpty() }) {
+            errors["afternoonUnits"] = "Please select units for the afternoon medication(s)"
+        }
+
+        // Evening
+        val eveningTime = screenState.value.evening.time
+        if (eveningTime.isNullOrEmpty() || !validateTime(eveningTime)) {
+            errors["eveningTime"] = "Please enter a valid evening time (HH:mm)"
+        } else if (!isTimeInRange(eveningTime, 17, 21)) {
+            errors["eveningTime"] = "Evening time must be between 17:00 and 21:59"
+        }
+
+        if (screenState.value.evening.prescriptionDetails.any { it.selectedMedication.name == "Select" }) {
+            errors["eveningMedication"] = "Please select a medication for the evening"
+        }
+        if (screenState.value.evening.prescriptionDetails.any { it.dosage == 0 }) {
+            errors["eveningDosage"] = "Please enter a dosage for the evening medication(s)"
+        }
+        if (screenState.value.evening.prescriptionDetails.any { it.selectedUnits.isEmpty() }) {
+            errors["eveningUnits"] = "Please select units for the evening medication(s)"
+        }
+
+        _screenState.update { it.copy(errors = errors) }
+        return errors.isEmpty()
+    }
+
+
     fun onTimeChanged(timeOfDay: TimeOfDay, time: String) {
         _screenState.update { currentState ->
             val timeState = when (timeOfDay) {
@@ -88,6 +152,7 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
                 TimeOfDay.EVENING -> currentState.copy(evening = updatedTimeState)
             }
         }
+        validateFields()
     }
 
     fun onAddPrescriptionRow(timeOfDay: TimeOfDay) {
@@ -112,9 +177,11 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
                     TimeOfDay.EVENING -> currentState.copy(evening = updatedTimeState)
                 }
             } else {
-                currentState // No change if button is disabled or max rows reached
+                currentState
             }
         }
+
+        validateFields()
     }
 
     fun onRemovePrescriptionRow(timeOfDay: TimeOfDay, index: Int) {
@@ -174,6 +241,7 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
             }
             updateDetailList(currentState, timeOfDay, updatedDetails)
         }
+        validateFields()
     }
 
     fun onSelectMedication(timeOfDay: TimeOfDay, index: Int, medication: Medication) {
@@ -185,6 +253,7 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
             }
             updateDetailList(currentState, timeOfDay, updatedDetails)
         }
+        validateFields()
     }
 
     fun onSelectUnits(timeOfDay: TimeOfDay, index: Int, units: String) {
@@ -195,6 +264,19 @@ class PrescriptionViewModel(private val prescriptionRepository: PrescriptionRepo
                 }
             }
             updateDetailList(currentState, timeOfDay, updatedDetails)
+        }
+        validateFields()
+    }
+
+    private fun isTimeInRange(timeString: String, startHour: Int, endHour: Int): Boolean {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("HH:mm")
+            val time = LocalTime.parse(timeString, formatter)
+            val start = LocalTime.of(startHour, 0)
+            val end = LocalTime.of(endHour, 59)
+            time in start..end
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -253,7 +335,8 @@ data class PrescriptionTimeState(
 data class PrescriptionScreenState(
     val morning: PrescriptionTimeState = PrescriptionTimeState(),
     val afternoon: PrescriptionTimeState = PrescriptionTimeState(),
-    val evening: PrescriptionTimeState = PrescriptionTimeState()
+    val evening: PrescriptionTimeState = PrescriptionTimeState(),
+    val errors: Map<String, String> = emptyMap(),
 )
 
 class PrescriptionViewModelFactory(

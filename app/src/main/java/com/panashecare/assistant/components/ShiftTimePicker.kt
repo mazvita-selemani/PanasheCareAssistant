@@ -19,9 +19,9 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.panashecare.assistant.R
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftScheduleState
@@ -54,6 +55,7 @@ import java.util.Locale
 fun ShiftTimePicker(
     modifier: Modifier = Modifier,
     state: ShiftScheduleState,
+    updateChecked: (Boolean) -> Unit,
     updateStartDate: (Long) -> Unit,
     updateEndDate: (Long) -> Unit,
     updateStartTime: (TimePickerState) -> Unit,
@@ -71,7 +73,7 @@ fun ShiftTimePicker(
         modifier = modifier
             .fillMaxWidth()
             .height(300.dp)
-            .background(color = Color(0xFFF4F4F5),shape = RoundedCornerShape(size = 18.dp))
+            .background(color = Color(0xFFF4F4F5), shape = RoundedCornerShape(size = 18.dp))
             .padding(16.dp)
     ) {
         Text("Start", fontWeight = FontWeight.Bold, color = Color.Gray)
@@ -83,10 +85,13 @@ fun ShiftTimePicker(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TimeDateTextField(
-                value = state.startTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "",
-                modifier = Modifier.weight(0.5f)
-            )
+            Column(modifier = Modifier.weight(0.5f)) {
+                TimeDateTextField(
+                    value = state.startTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "",
+                    modifier = Modifier,
+                    error = state.errors["startTime"]
+                )
+            }
 
             Icon(
                 painter = painterResource(id = R.drawable.clock),
@@ -96,10 +101,13 @@ fun ShiftTimePicker(
                     .clickable { showStartTimePicker(true) }
             )
 
-            TimeDateTextField(
-                value = state.startDate?.let { dateFormatter.format(Date(it)) } ?: "",
-                modifier = Modifier.weight(0.5f)
-            )
+            Column(modifier = Modifier.weight(0.5f)) {
+                TimeDateTextField(
+                    value = state.startDate?.let { dateFormatter.format(Date(it)) } ?: "",
+                    modifier = Modifier,
+                    error = state.errors["startDate"]
+                )
+            }
 
             Icon(
                 painter = painterResource(id = R.drawable.calendar),
@@ -120,7 +128,7 @@ fun ShiftTimePicker(
             Text("End", fontWeight = FontWeight.Bold, color = Color.Gray)
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
+                Checkbox(checked = state.isChecked, onCheckedChange = { updateChecked(it) })
                 Text("Same day")
             }
         }
@@ -132,30 +140,36 @@ fun ShiftTimePicker(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TimeDateTextField(
-                value = state.endTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "",
-                modifier = Modifier.weight(0.5f)
-            )
+            Column(modifier = Modifier.weight(0.5f)) {
+                TimeDateTextField(
+                    value = state.endTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "",
+                    error = state.errors["endTime"],
+                    modifier = Modifier
+                )
+            }
 
             Icon(
                 painter = painterResource(id = R.drawable.clock),
                 contentDescription = "Pick time",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { showEndTimePicker( true ) }
+                    .clickable { showEndTimePicker(true) }
             )
 
-            TimeDateTextField(
-                value = state.endDate?.let { dateFormatter.format(Date(it)) } ?: "",
-                modifier = Modifier.weight(0.5f)
-            )
+            Column(modifier = Modifier.weight(0.5f)) {
+                TimeDateTextField(
+                    value = state.endDate?.let { dateFormatter.format(Date(it)) } ?: "",
+                    modifier = Modifier,
+                    error = state.errors["endDate"]
+                )
+            }
 
             Icon(
                 painter = painterResource(id = R.drawable.calendar),
                 contentDescription = "Pick date",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { showEndDatePicker( true ) }
+                    .clickable { if(!state.isChecked) showEndDatePicker(true) }
             )
         }
     }
@@ -204,7 +218,7 @@ fun ShiftTimePicker(
                     updateEndDate(it!!)
                     showEndDatePicker(false)
                 },
-                onDismiss = { showEndDatePicker(false)}
+                onDismiss = { showEndDatePicker(false) }
             )
         }
     }
@@ -212,13 +226,11 @@ fun ShiftTimePicker(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeDateTextField(value: String, modifier: Modifier){
+fun TimeDateTextField(value: String, modifier: Modifier, error: String? = null) {
 
-    val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        // backgroundColor = Color.White,
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = Color.Black,
         unfocusedBorderColor = Color.Black,
-        // placeholderColor = Color.Gray,
         focusedTextColor = Color.Black
     )
 
@@ -229,8 +241,12 @@ fun TimeDateTextField(value: String, modifier: Modifier){
         readOnly = true,
         singleLine = true,
         colors = textFieldColors,
-        shape = RoundedCornerShape(15.dp)
+        shape = RoundedCornerShape(15.dp),
+        isError = error != null
     )
+    if (error != null) {
+        Text(text = error, color = Color.Red, fontSize = 12.sp)
+    }
 }
 
 /**
@@ -241,7 +257,7 @@ fun TimeDateTextField(value: String, modifier: Modifier){
 private fun InputTime(
     onConfirm: (TimePickerState) -> Unit,
     onDismiss: () -> Unit,
-){
+) {
     val currentTime = Calendar.getInstance()
 
     val timePickerState = rememberTimePickerState(

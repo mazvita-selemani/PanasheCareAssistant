@@ -35,16 +35,66 @@ class CreateShiftViewModel(
 
     }
 
-    fun createShift(shift: Shift) = viewModelScope.launch {
-        shiftRepository.createShift(
-            shift = shift,
-        ) { success ->
-            if (success) {
-                Log.d("Firebase", "Shift created!")
+    fun createShift(shift: Shift) {
 
-            } else {
-                Log.e("Firebase", "Shift creation failed.")
+        if (!validateFields()) return
+
+        viewModelScope.launch {
+            shiftRepository.createShift(
+                shift = shift,
+            ) { success ->
+                if (success) {
+                    Log.d("Firebase", "Shift created!")
+
+                } else {
+                    Log.e("Firebase", "Shift creation failed.")
+                }
             }
+        }
+    }
+
+
+    fun validateFields(): Boolean {
+        val errors = mutableMapOf<String, String>()
+
+        // Time pickers (null or unselected times)
+        if (state.startTime == null) {
+            errors["startTime"] = "Please select start time"
+        }
+
+        if (state.endTime == null) {
+            errors["endTime"] = "Please select end time"
+        }
+
+        // Date pickers (null means not selected)
+        if (state.startDate == null) {
+            errors["startDate"] = "Please select start date"
+        }
+
+        if (state.endDate == null) {
+            errors["endDate"] = "Please select end date"
+        }
+
+        if(state.selectedCarer == null) {
+            errors["selectedCarer"] = "Please select a carer"
+        }
+
+        // Check if end date is before start date
+        if (state.startDate != null && state.endDate != null) {
+            if (state.endDate!! < state.startDate!!) {
+                errors["endDate"] = "End date not valid"
+            }
+        }
+
+        state = state.copy(errors = errors)
+        return errors.isEmpty()
+    }
+
+    fun updateChecked(newValue: Boolean) {
+        state = state.copy(isChecked = newValue)
+
+        if (state.isChecked) {
+            state = state.copy(endDate = state.startDate)
         }
     }
 
@@ -135,5 +185,8 @@ data class CreateShiftState @OptIn(ExperimentalMaterial3Api::class) constructor(
     override val startDate: Long? = null,
     override val startTime: TimePickerState? = null,
     override val endDate: Long? = null,
-    override val endTime: TimePickerState? = null
+    override val endTime: TimePickerState? = null,
+    override val errors: Map<String, String> = emptyMap(),
+    override val isChecked: Boolean = false
+
 ) : ShiftScheduleState

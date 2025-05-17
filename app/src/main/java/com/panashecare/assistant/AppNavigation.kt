@@ -18,7 +18,6 @@ import com.panashecare.assistant.view.HomeScreen
 import com.panashecare.assistant.view.ProfileDetailsScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
-import com.panashecare.assistant.view.authentication.SignOut
 import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
 import com.panashecare.assistant.view.shiftManagement.CreateNewShiftScreen
@@ -40,7 +39,7 @@ object Register
 data class Home(val user: String)
 
 @Serializable
-object Profile
+data class Profile(val user: String)
 
 @Serializable
 data class SingleShiftView(val shiftId: String)
@@ -53,9 +52,6 @@ object ShiftList
 
 @Serializable
 object CreateNewShift
-
-@Serializable
-object SignOut
 
 @Serializable
 object VitalsList
@@ -104,7 +100,16 @@ fun AppNavigation(
             )
         }
 
-        composable<Profile> { ProfileDetailsScreen(modifier = modifier) }
+        composable<Profile> { backStackEntry ->
+            val profile: Profile = backStackEntry.toRoute()
+            val userId = /*profile.user*/ "-OPfMnJrTOztgSwyXJAT"
+            ProfileDetailsScreen(
+            modifier = modifier,
+            authViewModel = authViewModel,
+            navigateToLogin = { navController.navigate(Login) },
+            userRepository = userRepository,
+                userId = userId
+        ) }
 
         composable<Home> { backStackEntry ->
             val home: Home = backStackEntry.toRoute()
@@ -168,13 +173,6 @@ fun AppNavigation(
                 navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId)) }
             )
 
-        }
-
-        composable<SignOut> {
-            SignOut(
-                authViewModel = authViewModel,
-                navigateToLogin = { navController.navigate(Login) }
-            )
         }
 
         composable<VitalsLog> {

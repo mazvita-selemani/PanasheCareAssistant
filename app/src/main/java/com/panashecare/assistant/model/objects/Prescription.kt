@@ -17,21 +17,21 @@ data class Prescription(
         return mapOf(
             "id" to id,
             "patientId" to patientId,
-            "morningMedication" to morningMedication?.map { item ->  //changed from pair to item
+            "morningMedication" to morningMedication?.map { item ->
                 mapOf(
                     "medication" to item.medication, // Access name from Medication object
                     "dosage" to item.dosage  // Access dosage
                 )
             },
             "morningTime" to morningTime,
-            "afternoonMedication" to afternoonMedication?.map { item ->  //changed from pair to item
+            "afternoonMedication" to afternoonMedication?.map { item ->
                 mapOf(
                     "medication" to item.medication,
                     "dosage" to item.dosage
                 )
             },
             "afternoonTime" to afternoonTime,
-            "eveningMedication" to eveningMedication?.map { item -> //changed from pair to item
+            "eveningMedication" to eveningMedication?.map { item ->
                 mapOf(
                     "medication" to item.medication,
                     "dosage" to item.dosage

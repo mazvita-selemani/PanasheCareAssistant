@@ -13,6 +13,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.panashecare.assistant.model.objects.DailyMedicationLog
+import com.panashecare.assistant.model.objects.Intake
 import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.model.objects.Prescription
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
@@ -50,8 +51,19 @@ class DailyMedicationTrackerViewModel(
     private var medicationList = MutableStateFlow<MedicationResult>(MedicationResult.Loading)
 
     init {
+        // set current time of day state
+        val currentTimeOfDay = getCurrentTimeOfDay()
+        state = state.copy(currentTimeOfDay = currentTimeOfDay)
+
+        // get patient daily prescriptions
         loadPrescriptionSchedule()
+
+        // get medication information
         loadAllMedications()
+
+        // load logs for today if any exist
+        loadTodayLogs()
+
     }
 
 
@@ -76,6 +88,34 @@ class DailyMedicationTrackerViewModel(
         }
     }
 
+    private fun loadTodayLogs() {
+        val today = helper.convertDateToString(
+            LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        )
+
+        viewModelScope.launch {
+            dailyMedicationLogRepository.getLogByDateId(today) { logs ->
+                val morningLogs = logs?.morningIntake
+                val afternoonLogs = logs?.afternoonIntake
+                val eveningLogs = logs?.eveningIntake
+
+                Log.d("Panashe Logs", "morning logs: $morningLogs")
+                Log.d("Panashe Logs", "afternoon logs: $afternoonLogs")
+                Log.d("Panashe Logs", "evening logs: $eveningLogs")
+
+                state = state.copy(
+                    isMorningFirstChecked = morningLogs?.getOrNull(0)?.wasTaken ?: false,
+                    isMorningSecondChecked = morningLogs?.getOrNull(1)?.wasTaken ?: false,
+                    isAfternoonFirstChecked = afternoonLogs?.getOrNull(0)?.wasTaken ?: false,
+                    isAfternoonSecondChecked = afternoonLogs?.getOrNull(1)?.wasTaken ?: false,
+                    isEveningFirstChecked = eveningLogs?.getOrNull(0)?.wasTaken ?: false,
+                    isEveningSecondChecked = eveningLogs?.getOrNull(1)?.wasTaken ?: false
+                )
+            }
+        }
+    }
+
+
     fun getMedicationById(medicationId: String): Medication? {
         return medicationMap.value[medicationId]
     }
@@ -85,15 +125,12 @@ class DailyMedicationTrackerViewModel(
             val today = helper.convertDateToString(
                 LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             )
-            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the begining of call")
-
 
             val (medications, checks) = when (timeOfDay) {
                 "morning" -> state.prescriptions?.morningMedication to listOf(
                     state.isMorningFirstChecked,
                     state.isMorningSecondChecked
                 )
-
                 "afternoon" -> state.prescriptions?.afternoonMedication to listOf(
                     state.isAfternoonFirstChecked,
                     state.isAfternoonSecondChecked
@@ -105,26 +142,54 @@ class DailyMedicationTrackerViewModel(
                 else -> null to emptyList()
             }
 
-            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the end of call")
-            Log.d("Panashe stock", "first check is checked variable: ${checks.first()}")
-            Log.d("Panashe stock", "first check is checked variable list: $checks")
+            val intakeList = medications?.mapIndexed { index, item ->
+                Intake(
+                    medicationId = item.medication,
+                    wasTaken = checks.getOrNull(index) ?: false
+                )
+            }?.filter { it.medicationId != null } ?: return@launch
 
-
-
-            medications?.forEachIndexed { index, prescriptionItem ->
-                val wasTaken = checks.getOrNull(index) ?: false
-                val medId = prescriptionItem.medication
-                if (medId != null) {
-                    submitLogAndUpdateStock(
-                        medicationId = medId,
-                        wasTaken = wasTaken,
-                        timeOfDay = timeOfDay,
-                        date = today
+            // Update Firebase log and inventory
+            when (timeOfDay) {
+                "morning" -> {
+                    // Create a new log for the day
+                    val log = DailyMedicationLog(
+                        id = today,
+                        date = today,
+                        morningIntake = intakeList,
                     )
+                    dailyMedicationLogRepository.submitLog(log) { success ->
+                        if (success) Log.d("Firebase", "Morning log submitted")
+                        else Log.e("Firebase", "Morning log failed")
+                    }
+                }
+                "afternoon", "evening" -> {
+                    // Update existing log
+                    dailyMedicationLogRepository.updateLog(
+                        id = today,
+                        timeOfIntake = "${timeOfDay}Intake",
+                        intake = intakeList
+                    )
+                }
+            }
+
+            // Update stock for taken meds
+            intakeList.forEach { intake ->
+                if (intake.wasTaken == true) {
+                    val med = medicationMap.value[intake.medicationId]
+                    val newStock = (med?.totalInStock ?: 1) - 1
+                    medicationRepository.updateMedication(
+                        medicationId = intake.medicationId ?: return@forEach,
+                        newInventoryLevel = newStock
+                    ) { success ->
+                        if (success) Log.d("Firebase", "Inventory updated")
+                        else Log.e("Firebase", "Inventory update failed")
+                    }
                 }
             }
         }
     }
+
 
     private fun submitLogAndUpdateStock(
         medicationId: String,
@@ -134,9 +199,9 @@ class DailyMedicationTrackerViewModel(
     ) {
         val log = DailyMedicationLog(
             date = date,
-            medicationId = medicationId,
-            wasTaken = wasTaken,
-            timeOfDay = timeOfDay.uppercase()
+            morningIntake = emptyList(),
+            afternoonIntake = emptyList(),
+            eveningIntake = emptyList()
         )
 
         dailyMedicationLogRepository.submitLog(log) { success ->
@@ -163,13 +228,19 @@ class DailyMedicationTrackerViewModel(
         }
     }
 
+    fun getCurrentTimeOfDay(): String {
+        val hour = LocalDateTime.now().hour
+        return when (hour) {
+            in 5..11 -> "morning"
+            in 12..17 -> "afternoon"
+            else -> "evening"
+        }
+    }
+
+
 
     fun updateMorningFirstChecked(isChecked: Boolean) {
         state = state.copy(isMorningFirstChecked = isChecked)
-
-        Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked}")
-
-
     }
 
     fun updateMorningSecondChecked(isChecked: Boolean) {
@@ -202,8 +273,8 @@ data class DailyMedicationTrackerState(
     val isEveningFirstChecked: Boolean = false,
     val isEveningSecondChecked: Boolean = false,
     val prescriptions: Prescription? = null,
-
-    )
+    val currentTimeOfDay: String = "morning"
+)
 
 class DailyMedicationTrackerViewModelFactory(
     private val prescriptionRepository: PrescriptionRepository,

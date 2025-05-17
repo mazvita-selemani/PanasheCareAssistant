@@ -108,25 +108,28 @@ fun SchedulePrescriptionsScreen(
     }
 
    SchedulePrescriptions(
-        modifier = modifier,
-        morningState = morningState,
-        afternoonState = afternoonState,
-        eveningState = eveningState,
-        onValueChanged = viewModel::onTimeChanged,
-        onDosageChange = viewModel::onDosageChanged,
-        appColors = appColors,
-        onMedicationExpandedChange = viewModel::onMedicationExpandedChange,
-        onUnitsExpandedChange = viewModel::onUnitsExpandedChange,
-        onSelectMedicationChange = viewModel::onSelectMedication,
-        onSelectUnitsChange = viewModel::onSelectUnits,
-        onAddPrescriptionRow = viewModel::onAddPrescriptionRow,
-        createPrescription = {
-            if (prescription != null) {
-                viewModel.createPrescriptionSchedule(prescription)
-            }
-        },
-        navigateToDailyMedicationTracker = navigateToDailyMedicationTracker
-    )
+       modifier = modifier,
+       morningState = morningState,
+       afternoonState = afternoonState,
+       eveningState = eveningState,
+       onValueChanged = viewModel::onTimeChanged,
+       onDosageChange = viewModel::onDosageChanged,
+       appColors = appColors,
+       onMedicationExpandedChange = viewModel::onMedicationExpandedChange,
+       onUnitsExpandedChange = viewModel::onUnitsExpandedChange,
+       onSelectMedicationChange = viewModel::onSelectMedication,
+       onSelectUnitsChange = viewModel::onSelectUnits,
+       onAddPrescriptionRow = viewModel::onAddPrescriptionRow,
+       createPrescription = {
+           if (viewModel.validateFields()) {
+               if (prescription != null) {
+                   viewModel.createPrescriptionSchedule(prescription)
+                   navigateToDailyMedicationTracker()
+               }
+           }
+       },
+       errors = screenState.value.errors,
+   )
 
 }
 
@@ -134,7 +137,6 @@ fun SchedulePrescriptionsScreen(
 fun SchedulePrescriptions(
     modifier: Modifier = Modifier,
     createPrescription: () -> Unit,
-    navigateToDailyMedicationTracker: () -> Unit,
     morningState: PrescriptionTimeState,
     afternoonState: PrescriptionTimeState,
     eveningState: PrescriptionTimeState,
@@ -145,73 +147,78 @@ fun SchedulePrescriptions(
     onUnitsExpandedChange: (TimeOfDay, Int, Boolean) -> Unit,
     onSelectMedicationChange: (TimeOfDay, Int, Medication) -> Unit,
     onSelectUnitsChange: (TimeOfDay, Int, String) -> Unit,
-    onAddPrescriptionRow: (TimeOfDay) -> Unit
+    onAddPrescriptionRow: (TimeOfDay) -> Unit,
+    errors: Map<String, String>
 ) {
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(500.dp, 650.dp)
-            .verticalScroll(rememberScrollState())
-            .background(color = Color(0xFFF4F4F5), shape = RoundedCornerShape(size = 18.dp))
-            .padding(16.dp)
-    ) {
 
+    Column {
         HeaderButtonPair(
             pageHeader = "Schedule Prescriptions",
             headerButton = "Confirm",
             onNavigationClick = {
                 createPrescription()
-                navigateToDailyMedicationTracker()
             }
         )
 
-        PrescriptionsInput(
-            appColors = appColors,
-            onMedicationExpandedChange = onMedicationExpandedChange,
-            onUnitsExpandedChange = onUnitsExpandedChange,
-            onSelectMedicationChange = onSelectMedicationChange,
-            onSelectUnitsChange = onSelectUnitsChange,
-            timeOfDay = TimeOfDay.MORNING,
-            time = morningState.time ?: "",
-            onValueChanged = onValueChanged,
-            onDosageChange = onDosageChange,
-            onAddPrescriptionRow = onAddPrescriptionRow,
-            prescriptionDetailState = morningState.prescriptionDetails
-        )
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .heightIn(500.dp, 650.dp)
+                .verticalScroll(rememberScrollState())
+                .background(color = Color(0xFFF4F4F5), shape = RoundedCornerShape(size = 18.dp))
+                .padding(16.dp)
+        ) {
+            PrescriptionsInput(
+                appColors = appColors,
+                onMedicationExpandedChange = onMedicationExpandedChange,
+                onUnitsExpandedChange = onUnitsExpandedChange,
+                onSelectMedicationChange = onSelectMedicationChange,
+                onSelectUnitsChange = onSelectUnitsChange,
+                timeOfDay = TimeOfDay.MORNING,
+                time = morningState.time ?: "",
+                onValueChanged = onValueChanged,
+                onDosageChange = onDosageChange,
+                onAddPrescriptionRow = onAddPrescriptionRow,
+                prescriptionDetailState = morningState.prescriptionDetails,
+                errors = errors
+            )
 
-        CustomSpacer(15)
+            CustomSpacer(15)
 
-        PrescriptionsInput(
-            appColors = appColors,
-            onMedicationExpandedChange = onMedicationExpandedChange,
-            onUnitsExpandedChange = onUnitsExpandedChange,
-            onSelectMedicationChange = onSelectMedicationChange,
-            onSelectUnitsChange = onSelectUnitsChange,
-            timeOfDay = TimeOfDay.AFTERNOON,
-            time = afternoonState.time ?: "",
-            onValueChanged = onValueChanged,
-            onDosageChange = onDosageChange,
-            onAddPrescriptionRow = onAddPrescriptionRow,
-            prescriptionDetailState = afternoonState.prescriptionDetails
-        )
+            PrescriptionsInput(
+                appColors = appColors,
+                onMedicationExpandedChange = onMedicationExpandedChange,
+                onUnitsExpandedChange = onUnitsExpandedChange,
+                onSelectMedicationChange = onSelectMedicationChange,
+                onSelectUnitsChange = onSelectUnitsChange,
+                timeOfDay = TimeOfDay.AFTERNOON,
+                time = afternoonState.time ?: "",
+                onValueChanged = onValueChanged,
+                onDosageChange = onDosageChange,
+                onAddPrescriptionRow = onAddPrescriptionRow,
+                prescriptionDetailState = afternoonState.prescriptionDetails,
+                errors = errors
+            )
 
-        CustomSpacer(15)
+            CustomSpacer(15)
 
-        PrescriptionsInput(
-            appColors = appColors,
-            onMedicationExpandedChange = onMedicationExpandedChange,
-            onUnitsExpandedChange = onUnitsExpandedChange,
-            onSelectMedicationChange = onSelectMedicationChange,
-            onSelectUnitsChange = onSelectUnitsChange,
-            timeOfDay = TimeOfDay.EVENING,
-            time = eveningState.time ?: "",
-            onValueChanged = onValueChanged,
-            onDosageChange = onDosageChange,
-            onAddPrescriptionRow = onAddPrescriptionRow,
-            prescriptionDetailState = eveningState.prescriptionDetails
-        )
+            PrescriptionsInput(
+                appColors = appColors,
+                onMedicationExpandedChange = onMedicationExpandedChange,
+                onUnitsExpandedChange = onUnitsExpandedChange,
+                onSelectMedicationChange = onSelectMedicationChange,
+                onSelectUnitsChange = onSelectUnitsChange,
+                timeOfDay = TimeOfDay.EVENING,
+                time = eveningState.time ?: "",
+                onValueChanged = onValueChanged,
+                onDosageChange = onDosageChange,
+                onAddPrescriptionRow = onAddPrescriptionRow,
+                prescriptionDetailState = eveningState.prescriptionDetails,
+                errors = errors
+            )
 
+        }
     }
 
 
@@ -231,13 +238,14 @@ fun PrescriptionsInput(
     onUnitsExpandedChange: (TimeOfDay, Int, Boolean) -> Unit,
     onSelectMedicationChange: (TimeOfDay, Int, Medication) -> Unit,
     onSelectUnitsChange: (TimeOfDay, Int, String) -> Unit,
-    onAddPrescriptionRow: (TimeOfDay) -> Unit
+    onAddPrescriptionRow: (TimeOfDay) -> Unit,
+    errors: Map<String, String> // Receive the errors map
 ) {
-    var isSecondRowVisible by remember { mutableStateOf(false) }
+    var isSecondRowVisible by remember { mutableStateOf(prescriptionDetailState.size > 1) } // Initialize based on the list size
 
     val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = Color.Black,
-        unfocusedBorderColor = Color.Black,
+        focusedBorderColor = if (errors.containsKey("${timeOfDay.name.lowercase()}Time")) Color.Red else Color.Black,
+        unfocusedBorderColor = if (errors.containsKey("${timeOfDay.name.lowercase()}Time")) Color.Red else Color.Black,
         focusedTextColor = Color.Black
     )
 
@@ -263,10 +271,17 @@ fun PrescriptionsInput(
                 )
             }
         )
+        if (errors.containsKey("${timeOfDay.name.lowercase()}Time")) {
+            Text(
+                text = errors["${timeOfDay.name.lowercase()}Time"]!!,
+                color = Color.Red,
+                fontSize = 12.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        MedicationRow(
+        MedicationRowWithError(
             time = time,
             dosage = prescriptionDetailState[firstRow].dosage,
             onDosageChange = { newDosage -> onDosageChange(timeOfDay, firstRow, newDosage) },
@@ -303,14 +318,15 @@ fun PrescriptionsInput(
                     newUnit
                 )
             },
-            textFieldColors = textFieldColors
+            textFieldColors = textFieldColors,
+            timeOfDay = timeOfDay,
+            rowIndex = firstRow,
+            errors = errors
         )
 
         if (isSecondRowVisible && prescriptionDetailState.size > 1) {
-            Log.d("Panashe new row", "Content should be showing")
             Spacer(modifier = Modifier.height(8.dp))
-
-            MedicationRow(
+            MedicationRowWithError(
                 time = time,
                 dosage = prescriptionDetailState[secondRow].dosage,
                 onDosageChange = { newDosage ->
@@ -353,7 +369,10 @@ fun PrescriptionsInput(
                         newUnit
                     )
                 },
-                textFieldColors = textFieldColors
+                textFieldColors = textFieldColors,
+                timeOfDay = timeOfDay,
+                rowIndex = secondRow,
+                errors = errors
             )
         }
 
@@ -367,9 +386,7 @@ fun PrescriptionsInput(
                 onClick = {
                     isSecondRowVisible = !isSecondRowVisible
                     onAddPrescriptionRow(timeOfDay)
-                    //        onRemovePrescriptionRow(timeOfDay, 1) // remove second row
                 },
-                //  enabled = isPrimaryFieldsValid,
                 modifier = Modifier
                     .height(45.dp)
                     .background(
@@ -385,7 +402,7 @@ fun PrescriptionsInput(
                 )
             ) {
                 Text(
-                    text = if (isSecondRowVisible) "Remove" else "Add",
+                    text = if (isSecondRowVisible && prescriptionDetailState.size > 1) "Remove" else "Add",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal
                 )
@@ -394,10 +411,9 @@ fun PrescriptionsInput(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MedicationRow(
+fun MedicationRowWithError(
     time: String,
     dosage: Int,
     onDosageChange: (Int) -> Unit,
@@ -410,87 +426,139 @@ fun MedicationRow(
     medicationList: List<Medication>,
     onSelectMedicationChange: (Medication) -> Unit,
     onSelectUnitsChange: (String) -> Unit,
-    textFieldColors: TextFieldColors
+    textFieldColors: TextFieldColors,
+    timeOfDay: TimeOfDay,
+    rowIndex: Int,
+    errors: Map<String, String>
 ) {
     if (!validateTime(time)) return
 
     val unitsList = listOf("mg", "l")
 
-    Log.d("Panashe expanded", "$isMedicationExpanded")
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top // Align items to the top for better layout
     ) {
-        // Medication dropdown
-        ExposedDropdownMenuBox(
-            modifier = Modifier.weight(1f),
-            expanded = isMedicationExpanded,
-            onExpandedChange = { onMedicationExpandedChange(isMedicationExpanded) }
-        ) {
-            TextField(
-                modifier = Modifier.menuAnchor(),
-                value = selectedMedication.name ?: "",
-                onValueChange = { },
-                readOnly = true
-            )
-
-            ExposedDropdownMenu(
+        // Medication dropdown with error
+        Column(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
                 expanded = isMedicationExpanded,
-                onDismissRequest = { onMedicationExpandedChange(isMedicationExpanded) },
-                scrollState = rememberScrollState()
+                onExpandedChange = { onMedicationExpandedChange(isMedicationExpanded) }
             ) {
+                TextField(
+                    modifier = Modifier.menuAnchor(),
+                    value = selectedMedication.name ?: "",
+                    onValueChange = { },
+                    readOnly = true,
+                    colors = textFieldColors
+                )
 
-                medicationList.forEachIndexed { _, medication ->
-                    DropdownMenuItem(
-                        text = { Text(text = "${medication.name}") },
-                        onClick = {
-                            onSelectMedicationChange(medication)
-                            onMedicationExpandedChange(isMedicationExpanded)
-                        }
-                    )
+                ExposedDropdownMenu(
+                    expanded = isMedicationExpanded,
+                    onDismissRequest = { onMedicationExpandedChange(isMedicationExpanded) },
+                    scrollState = rememberScrollState()
+                ) {
+                    medicationList.forEachIndexed { _, medication ->
+                        DropdownMenuItem(
+                            text = { Text(text = "${medication.name}") },
+                            onClick = {
+                                onSelectMedicationChange(medication)
+                                onMedicationExpandedChange(isMedicationExpanded)
+                            }
+                        )
+                    }
                 }
+            }
+            if (errors.containsKey("${timeOfDay.name.lowercase()}Medication") && rowIndex == firstRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Medication"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else if (errors.containsKey("${timeOfDay.name.lowercase()}Medication") && rowIndex == secondRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Medication"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else {
+                Spacer(modifier = Modifier.height(4.dp)) // Add some space if no error
             }
         }
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        OutlinedTextField(
-            value = if (dosage == 0) "" else dosage.toString(),
-            onValueChange = { onDosageChange(it.toIntOrNull() ?: 0) },
-            modifier = Modifier.weight(0.7f),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            colors = textFieldColors,
-            shape = RoundedCornerShape(5.dp)
-        )
+        // Dosage input with error
+        Column(modifier = Modifier.weight(0.7f)) {
+            OutlinedTextField(
+                value = if (dosage == 0) "" else dosage.toString(),
+                onValueChange = { onDosageChange(it.toIntOrNull() ?: 0) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = textFieldColors,
+                shape = RoundedCornerShape(5.dp)
+            )
+            if (errors.containsKey("${timeOfDay.name.lowercase()}Dosage") && rowIndex == firstRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Dosage"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else if (errors.containsKey("${timeOfDay.name.lowercase()}Dosage") && rowIndex == secondRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Dosage"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else {
+                Spacer(modifier = Modifier.height(4.dp)) // Add some space if no error
+            }
+        }
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        ExposedDropdownMenuBox(
-            expanded = isUnitsExpanded,
-            onExpandedChange = { onUnitsExpandedChange(isUnitsExpanded) },
-            modifier = Modifier.weight(1f)
-        ) {
-            TextField(
-                value = selectedUnits,
-                onValueChange = {},
-                readOnly = true,
-                modifier = Modifier.menuAnchor()
-            )
-            ExposedDropdownMenu(
+        // Units dropdown with error
+        Column(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
                 expanded = isUnitsExpanded,
-                onDismissRequest = { onUnitsExpandedChange(isUnitsExpanded) }
+                onExpandedChange = { onUnitsExpandedChange(isUnitsExpanded) }
             ) {
-                unitsList.forEach { unit ->
-                    DropdownMenuItem(
-                        text = { Text(unit) },
-                        onClick = {
-                            onSelectUnitsChange(unit)
-                            onUnitsExpandedChange(isUnitsExpanded)
-                        }
-                    )
+                TextField(
+                    value = selectedUnits,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier.menuAnchor(),
+                    colors = textFieldColors
+                )
+                ExposedDropdownMenu(
+                    expanded = isUnitsExpanded,
+                    onDismissRequest = { onUnitsExpandedChange(isUnitsExpanded) }
+                ) {
+                    unitsList.forEach { unit ->
+                        DropdownMenuItem(
+                            text = { Text(unit) },
+                            onClick = {
+                                onSelectUnitsChange(unit)
+                                onUnitsExpandedChange(isUnitsExpanded)
+                            }
+                        )
+                    }
                 }
+            }
+            if (errors.containsKey("${timeOfDay.name.lowercase()}Units") && rowIndex == firstRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Units"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else if (errors.containsKey("${timeOfDay.name.lowercase()}Units") && rowIndex == secondRow) {
+                Text(
+                    text = errors["${timeOfDay.name.lowercase()}Units"]!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            } else {
+                Spacer(modifier = Modifier.height(4.dp)) // Add some space if no error
             }
         }
     }
