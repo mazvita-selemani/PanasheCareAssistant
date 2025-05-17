@@ -109,7 +109,7 @@ fun DailyMedicationTracker(
         HeaderButtonPair(
             pageHeader = "Daily Medication Tracker",
             headerButton = "Submit Log",
-            onNavigationClick = { onSubmitLog("evening") }
+            onNavigationClick = { onSubmitLog(state.currentTimeOfDay) }
         )
 
         if (true /*todo replace with admin check*/) {
