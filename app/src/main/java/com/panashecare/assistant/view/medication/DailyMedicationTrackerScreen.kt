@@ -95,6 +95,9 @@ fun DailyMedicationTracker(
 ) {
 
     val appColors = AppColors()
+    val isMorningEnabled = state.currentTimeOfDay == "morning"
+    val isAfternoonEnabled = state.currentTimeOfDay == "afternoon"
+    val isEveningEnabled = state.currentTimeOfDay == "evening"
 
 
     Column(
@@ -175,10 +178,11 @@ fun DailyMedicationTracker(
                 itemsIndexed(state.prescriptions.morningMedication) { index, _ ->
                     MedicationDetailsCard(
                         medicalList = state.prescriptions.morningMedication,
-                        isChecked = if (index == 0) state.isMorningFirstChecked else state.isMorningSecondChecked,
-                        onCheckedChange = if (index == 0) onMorningFirstCheckedChange else onMorningSecondCheckedChange,
+                        isChecked = if (index == 0 && isMorningEnabled) state.isMorningFirstChecked else state.isMorningSecondChecked,
+                        onCheckedChange = if (index == 0 && isMorningEnabled) onMorningFirstCheckedChange else onMorningSecondCheckedChange,
                         index = index,
-                        getMedicationById = getMedicationById
+                        getMedicationById = getMedicationById,
+                        enabled = isMorningEnabled
                     )
                 }
             } else {
@@ -194,10 +198,11 @@ fun DailyMedicationTracker(
                 itemsIndexed(state.prescriptions.afternoonMedication) { index, _ ->
                     MedicationDetailsCard(
                         medicalList = state.prescriptions.afternoonMedication,
-                        isChecked = if (index == 0) state.isAfternoonFirstChecked else state.isAfternoonSecondChecked,
-                        onCheckedChange = if (index == 0) onAfternoonFirstCheckedChange else onAfternoonSecondCheckedChange,
+                        isChecked = if (index == 0 && isAfternoonEnabled) state.isAfternoonFirstChecked else state.isAfternoonSecondChecked,
+                        onCheckedChange = if (index == 0 && isAfternoonEnabled) onAfternoonFirstCheckedChange else onAfternoonSecondCheckedChange,
                         index = index,
-                        getMedicationById = getMedicationById
+                        getMedicationById = getMedicationById,
+                        enabled = isAfternoonEnabled
                     )
                 }
             } else {
@@ -213,10 +218,11 @@ fun DailyMedicationTracker(
                 itemsIndexed(state.prescriptions.eveningMedication) { index, _ ->
                     MedicationDetailsCard(
                         medicalList = state.prescriptions.eveningMedication,
-                        isChecked = if (index == 0) state.isEveningFirstChecked else state.isEveningSecondChecked,
-                        onCheckedChange = if (index == 0) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
+                        isChecked = if (index == 0 && isEveningEnabled) state.isEveningFirstChecked else state.isEveningSecondChecked,
+                        onCheckedChange = if (index == 0 && isEveningEnabled) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
                         index = index,
-                        getMedicationById = getMedicationById
+                        getMedicationById = getMedicationById,
+                        enabled = isEveningEnabled
                     )
                 }
             } else {

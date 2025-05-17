@@ -52,6 +52,8 @@ class DailyMedicationTrackerViewModel(
     init {
         loadPrescriptionSchedule()
         loadAllMedications()
+        val currentTimeOfDay = getCurrentTimeOfDay()
+        state = state.copy(currentTimeOfDay = currentTimeOfDay)
     }
 
 
@@ -85,8 +87,6 @@ class DailyMedicationTrackerViewModel(
             val today = helper.convertDateToString(
                 LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             )
-            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the begining of call")
-
 
             val (medications, checks) = when (timeOfDay) {
                 "morning" -> state.prescriptions?.morningMedication to listOf(
@@ -104,12 +104,6 @@ class DailyMedicationTrackerViewModel(
                 )
                 else -> null to emptyList()
             }
-
-            Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked} at the end of call")
-            Log.d("Panashe stock", "first check is checked variable: ${checks.first()}")
-            Log.d("Panashe stock", "first check is checked variable list: $checks")
-
-
 
             medications?.forEachIndexed { index, prescriptionItem ->
                 val wasTaken = checks.getOrNull(index) ?: false
@@ -163,13 +157,19 @@ class DailyMedicationTrackerViewModel(
         }
     }
 
+    fun getCurrentTimeOfDay(): String {
+        val hour = LocalDateTime.now().hour
+        return when (hour) {
+            in 5..11 -> "morning"
+            in 12..17 -> "afternoon"
+            else -> "evening"
+        }
+    }
+
+
 
     fun updateMorningFirstChecked(isChecked: Boolean) {
         state = state.copy(isMorningFirstChecked = isChecked)
-
-        Log.d("Panashe stock", "first check is checked: ${state.isMorningFirstChecked}")
-
-
     }
 
     fun updateMorningSecondChecked(isChecked: Boolean) {
@@ -202,8 +202,8 @@ data class DailyMedicationTrackerState(
     val isEveningFirstChecked: Boolean = false,
     val isEveningSecondChecked: Boolean = false,
     val prescriptions: Prescription? = null,
-
-    )
+    val currentTimeOfDay: String = "morning"
+)
 
 class DailyMedicationTrackerViewModelFactory(
     private val prescriptionRepository: PrescriptionRepository,
