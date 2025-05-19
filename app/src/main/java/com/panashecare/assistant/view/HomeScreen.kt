@@ -92,6 +92,8 @@ fun HomeScreen(
     val futureShift = viewModel.state.futureShift
     val pastShift by lazy { viewModel.state.pastShift }
 
+    Log.d("HomeScreen state in parent composable", "User: ${viewModel.state.user}")
+
     Home(
         modifier = modifier,
         navigateToProfile = navigateToProfile,
@@ -248,7 +250,7 @@ fun Home(
                     modifier = Modifier, state.futureShift!!,
                     navigateToSingleShiftView = { navigateToSingleViewForFutureShift(state.futureShift)  }
                 )
-            } ?: Text("No upcoming shifts found.")
+            } ?: NoShiftsMessage()
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
 
@@ -277,7 +279,7 @@ fun Home(
                     modifier = Modifier, state.pastShift!!,
                     navigateToSingleShiftView = { navigateToSingleViewForPastShift(state.pastShift)  }
                 )
-            } ?: Text("No past shifts found.")
+            } ?: NoShiftsMessage()
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
     }
@@ -289,6 +291,19 @@ fun Home(
 @Composable
 private fun HomePageSpacer(height: Int) {
     Spacer(modifier = Modifier.height(height.dp))
+}
+
+@Composable
+private fun NoShiftsMessage(){
+    Box(
+        modifier = Modifier
+            .padding(vertical = 10.dp)
+            .height(150.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ){
+        Text("No past shifts found.")
+    }
 }
 
 @Composable
@@ -468,7 +483,7 @@ fun PermissionDialog(permissionState: PermissionState) { // Take PermissionState
 fun PreviewHomePage() {
      HomeScreen(
          modifier = Modifier,
-         userId = "-OPpePiI_ULo4Bfx6UXD",
+         userId = "-OPpeK9nAgqrw3rLpcH5",
          repository = ShiftRepository(),
          userRepository = UserRepository(),
          navigateToProfile = {  },

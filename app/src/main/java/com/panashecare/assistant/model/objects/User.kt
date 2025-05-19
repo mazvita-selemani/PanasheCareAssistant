@@ -19,7 +19,7 @@ data class User(
             "lastName" to lastName,
             "phoneNumber" to phoneNumber,
             "email" to email,
-            "isAdmin" to userType,
+            "isAdmin" to userType?.name,
             "patientFirstName" to patientFirstName,
             "patientLastName" to patientLastName
         )
