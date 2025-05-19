@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.UserRepository
@@ -52,7 +53,7 @@ fun RegisterScreen(
         lastName = viewModel.state.lastName,
         email = viewModel.state.email,
         phoneNumber = viewModel.state.phoneNumber,
-        isAdmin = viewModel.state.isAdmin,
+        userType = if (viewModel.state.isAdmin) UserType.ADMIN else UserType.CARER,
         patientFirstName = viewModel.state.patientFirstName,
         patientLastName = viewModel.state.patientLastName
     )

@@ -12,7 +12,9 @@ enum class Permission {
     UpdatePrescriptionSchedule,
     ViewInventory,
     UpdateInventory,
-    EditPatientDetails
+    EditPatientDetails,
+    ViewVitals,
+    LogNewVitals
 }
 
 
@@ -28,10 +30,14 @@ val rolePermissions = mapOf(
         Permission.UpdatePrescriptionSchedule,
         Permission.ViewInventory,
         Permission.UpdateInventory,
-        Permission.EditPatientDetails
+        Permission.EditPatientDetails,
+        Permission.ViewVitals,
+        Permission.LogNewVitals
     ),
     UserType.CARER to setOf(
-        Permission.ViewAllShifts
+        Permission.ViewAllShifts,
+        Permission.ViewVitals,
+        Permission.LogNewVitals
     )
 )
 

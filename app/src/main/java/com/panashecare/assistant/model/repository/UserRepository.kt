@@ -8,6 +8,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import kotlinx.coroutines.channels.awaitClose
@@ -36,21 +37,9 @@ class UserRepository(
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val users = snapshot.children.mapNotNull { dataSnapshot ->
-                    val id = dataSnapshot.child("id").getValue(String::class.java)
-                    val firstName = dataSnapshot.child("firstName").getValue(String::class.java)
-                    val lastName = dataSnapshot.child("lastName").getValue(String::class.java)
-                    val phoneNumber = dataSnapshot.child("phoneNumber").getValue(String::class.java)
-                    val email = dataSnapshot.child("email").getValue(String::class.java)
-                    val isAdminValue = dataSnapshot.child("isAdmin").getValue(Boolean::class.java)
-                    val patientFirstName = dataSnapshot.child("patientFirstName").getValue(String::class.java)
-                    val patientLastName = dataSnapshot.child("patientLastName").getValue(String::class.java)
-
-                    User(id, firstName, lastName, phoneNumber, email, isAdminValue, patientFirstName, patientLastName)
-                }
-                val carers = users.filter { it.isAdmin == false }
+                val users = snapshot.children.mapNotNull { dataSnapshot -> dataSnapshot.getValue(User::class.java) }
+                val carers = users.filter { it.userType == UserType.CARER }
                 trySend(carers)
-
              }
 
             override fun onCancelled(error: DatabaseError) {
@@ -116,7 +105,6 @@ class UserRepository(
             callback(null)
         }
     }
-
 
     fun saveUser(user: User, onComplete: (Boolean) -> Unit) {
         Log.d("Register", "About to save user")

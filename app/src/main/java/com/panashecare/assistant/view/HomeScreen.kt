@@ -53,7 +53,11 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
+import com.panashecare.assistant.access.AccessControl
+import com.panashecare.assistant.access.Permission
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
@@ -61,6 +65,7 @@ import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.ShiftResult
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.HomeScreenState
 import com.panashecare.assistant.viewModel.HomeScreenViewModel
 import com.panashecare.assistant.viewModel.HomeScreenViewModelFactory
@@ -71,26 +76,26 @@ fun HomeScreen(
     modifier: Modifier,
     userId: String,
     repository: ShiftRepository,
+    userRepository: UserRepository,
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,
     navigateToShiftList: () -> Unit,
     navigateToSingleViewForPastShift: (Shift) -> Unit,
     navigateToSingleViewForFutureShift: (Shift) -> Unit
 ){
-
+    // checking sdk version to see if permission dialog can be used
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         RequestNotificationPermissionDialog()
     }
 
-    val viewModel = viewModel<HomeScreenViewModel>(factory = HomeScreenViewModelFactory(repository))
+    val viewModel = viewModel<HomeScreenViewModel>(factory = HomeScreenViewModelFactory(repository, userRepository, userId))
     val futureShift = viewModel.state.futureShift
     val pastShift by lazy { viewModel.state.pastShift }
-
-    Log.d("HomeScreen", "pastShift: $futureShift")
 
     Home(
         modifier = modifier,
         navigateToProfile = navigateToProfile,
+        user = viewModel.state.user ?: User(firstName = "Loading..."),
         navigateToCreateShift = { navigateToCreateShift() },
         navigateToShiftList = { navigateToShiftList() },
         state = viewModel.state,
@@ -110,6 +115,7 @@ fun HomeScreen(
 @Composable
 fun Home(
     modifier: Modifier = Modifier,
+    user: User,
     navigateToProfile: () -> Unit,
     navigateToCreateShift: () -> Unit,
     navigateToShiftList: () -> Unit,
@@ -120,6 +126,7 @@ fun Home(
 ) {
 
     val scrollState = rememberScrollState()
+    val appColors = AppColors()
 
     Column(
         modifier = modifier
@@ -136,33 +143,35 @@ fun Home(
 
         Row(
             modifier = Modifier
-                .width(354.dp)
+                .fillMaxWidth()
                 .height(120.dp)
-                .background(color = Color(0xFFF8E7FA), shape = RoundedCornerShape(18.dp))
-                .padding(horizontal = 16.dp), // optional padding for spacing
-            verticalAlignment = Alignment.CenterVertically, // centers items vertically
-            horizontalArrangement = Arrangement.SpaceBetween // spread them evenly
+                .background(color = appColors.primarySuperLight, shape = RoundedCornerShape(18.dp))
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Profile icon with circular black border
             ProfileCircular(
                 navigateToProfile = { navigateToProfile() }
             )
 
             // Text in the center
             Text(
-                text = "Panashe’s Upcoming shifts",
+                text = if(AccessControl.isAuthorized(user, Permission.ViewAllShifts)) {
+                    if (user.userType == UserType.ADMIN) "${user.patientFirstName}’s Upcoming shifts" else "${user.firstName}’s Upcoming shifts"
+                } else {
+                    "Upcoming shifts"
+                },
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontFamily = FontFamily(Font(R.font.nunito_variablefont_wght)),
                     fontWeight = FontWeight(400),
-                    color = Color(0xFF000000),
+                    color = Color.Black,
                 ),
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 12.dp)
             )
 
-            // Notification Icon
             Icon(
                 imageVector = Icons.Default.Notifications,
                 contentDescription = "Notifications",
@@ -174,35 +183,44 @@ fun Home(
 
         HomePageSpacer(20)
 
-        //row for the two cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            // view all shifts card
-            HomePageNavCards(
-                modifier = Modifier.weight(1f),
-                painterResourceId = R.drawable.icon_park_outline_list,
-                message = "View All Upcoming shifts",
-                onClickNavigation = { navigateToShiftList() },
-                buttonBackgroundColor = Color(0xFFE7F2FA),
-                buttonContainerColor = Color(0xFFE7F2FA),
-                buttonContentColor = Color(0xFF005CAD),
-                cardBorderColor = Color(0xFF005CAD)
+            AccessControl.WithPermission(
+                user = user,
+                permission = Permission.ViewAllShifts,
+                onAuthorized = {
+                    // view all shifts card
+                    HomePageNavCards(
+                        modifier = Modifier.weight(1f),
+                        painterResourceId = R.drawable.icon_park_outline_list,
+                        message = "View All Upcoming shifts",
+                        onClickNavigation = { navigateToShiftList() },
+                        buttonBackgroundColor = appColors.primarySuperLightAlternative,
+                        buttonContainerColor = appColors.primarySuperLightAlternative,
+                        buttonContentColor = appColors.primaryDarkAlternative,
+                        cardBorderColor = appColors.primaryDarkAlternative
+                    )
+                }
             )
 
-
-            // create new shift card
-            HomePageNavCards(
-                modifier = Modifier.weight(1f),
-                painterResourceId = R.drawable.notes_svgrepo_com,
-                message = "Create a new shift",
-                onClickNavigation = { navigateToCreateShift() },
-                buttonBackgroundColor = Color(0xFFF8E7FA),
-                buttonContainerColor = Color(0xFFF8E7FA),
-                buttonContentColor = Color(0xFFC911CF),
-                cardBorderColor = Color(0xFFC911CF)
+            AccessControl.WithPermission(
+                user = user,
+                permission = Permission.CreateShifts,
+                onAuthorized = {
+                    // create new shift card
+                    HomePageNavCards(
+                        modifier = Modifier.weight(1f),
+                        painterResourceId = R.drawable.notes_svgrepo_com,
+                        message = "Create a new shift",
+                        onClickNavigation = { navigateToCreateShift() },
+                        buttonBackgroundColor = appColors.primarySuperLight,
+                        buttonContainerColor = appColors.primarySuperLight,
+                        buttonContentColor = appColors.primaryDark,
+                        cardBorderColor = appColors.primaryDark
+                    )
+                }
             )
         }
 
@@ -211,15 +229,15 @@ fun Home(
         Row(
             modifier = Modifier.align(Alignment.Start)
         ) {
-        Text(
-            text = "Next shift",
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight(400),
-                color = Color(0xFFC911CF),
-                textAlign = TextAlign.Start,
-            )
-        )}
+            Text(
+                text = "Next shift",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(400),
+                    color = Color(0xFFC911CF),
+                    textAlign = TextAlign.Start,
+                )
+            )}
 
         HomePageSpacer(10)
 
@@ -230,7 +248,7 @@ fun Home(
                     modifier = Modifier, state.futureShift!!,
                     navigateToSingleShiftView = { navigateToSingleViewForFutureShift(state.futureShift)  }
                 )
-            } ?: Text("No past shifts found.")
+            } ?: Text("No upcoming shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
 
@@ -262,8 +280,6 @@ fun Home(
             } ?: Text("No past shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
-
-
     }
 }
 
@@ -397,40 +413,37 @@ private fun HomePageNavCards(
 fun RequestNotificationPermissionDialog() {
     val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
 
-    // Use SideEffect to request the permission only when the composable is first entered
+    // Permission is requested only when the composable is first entered
     SideEffect {
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
         }
     }
 
-    // Show dialogs based on permission state
     if (!permissionState.status.isGranted) {
         if (permissionState.status.shouldShowRationale) {
-            RationaleDialog(permissionState = permissionState) // Pass the state!
+            RationaleDialog(permissionState = permissionState)
         } else {
-            PermissionDialog(permissionState = permissionState) // Pass the state!
+            PermissionDialog(permissionState = permissionState)
         }
     } else {
-        // Permission is granted, you can show your main UI or proceed with notification logic
-        Text(text = "Permission Granted!  You can now receive notifications.")
-        // In a real app, you'd navigate to your main screen or enable notifications here.
+        Text(text = "Permission Granted!  You can now receive notifications.", color = Color.Transparent)
     }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun RationaleDialog(permissionState: PermissionState) { // Take PermissionState
+fun RationaleDialog(permissionState: PermissionState) {
     AlertDialog(
-        onDismissRequest = { /* Don't dismiss, force decision */ },
+        onDismissRequest = { /* Don't dismiss */ },
         title = { Text(text = "Notification Permission Required") },
         text = { Text(text = "Notifications are important for this app to function correctly. Please allow them.") },
         confirmButton = {
-            Button(onClick = { permissionState.launchPermissionRequest() }) { // Use passed state
+            Button(onClick = { permissionState.launchPermissionRequest() }) {
                 Text(text = "Allow")
             }
         },
-        dismissButton = null // Don't allow dismissing
+        dismissButton = null
     )
 }
 
@@ -453,5 +466,15 @@ fun PermissionDialog(permissionState: PermissionState) { // Take PermissionState
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewHomePage() {
-    // HomeScreen()
+     HomeScreen(
+         modifier = Modifier,
+         userId = "-OPpePiI_ULo4Bfx6UXD",
+         repository = ShiftRepository(),
+         userRepository = UserRepository(),
+         navigateToProfile = {  },
+         navigateToCreateShift = {  },
+         navigateToShiftList = {  },
+         navigateToSingleViewForPastShift = {  },
+         navigateToSingleViewForFutureShift = {  }
+     )
 }

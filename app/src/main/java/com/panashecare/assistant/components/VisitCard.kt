@@ -150,7 +150,7 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: P
                                     )
                                 )
                                 Text(
-                                    text = "10.30 AM",
+                                    text = shift.shiftTime!!,
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight(300),
