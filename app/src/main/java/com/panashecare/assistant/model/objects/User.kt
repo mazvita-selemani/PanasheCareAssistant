@@ -1,12 +1,14 @@
 package com.panashecare.assistant.model.objects
 
+import com.panashecare.assistant.access.UserType
+
 data class User(
     var id: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val phoneNumber: String? = null,
     val email: String? = null,
-    val isAdmin: Boolean? = null,
+    val userType: UserType? = null,
     val patientFirstName: String? = null,
     val patientLastName: String? = null
 ) {
@@ -17,7 +19,7 @@ data class User(
             "lastName" to lastName,
             "phoneNumber" to phoneNumber,
             "email" to email,
-            "isAdmin" to isAdmin,
+            "isAdmin" to userType,
             "patientFirstName" to patientFirstName,
             "patientLastName" to patientLastName
         )

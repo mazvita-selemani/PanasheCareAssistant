@@ -121,11 +121,14 @@ fun AppNavigation(
                 navigateToShiftList = { navController.navigate(ShiftList) },
                 modifier = modifier,
                 userId = userId,
-                navigateToSingleViewForPastShift = {shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))},
-                navigateToSingleViewForFutureShift = {shift ->
+                navigateToSingleViewForPastShift = { shift ->
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                },
+                navigateToSingleViewForFutureShift = { shift ->
                     Log.d("Navigation", "Shift ID: ${shift.id}")
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))}
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                },
+                userRepository = userRepository
             )
         }
 
