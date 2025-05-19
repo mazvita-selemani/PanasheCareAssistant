@@ -16,14 +16,19 @@ import com.panashecare.assistant.model.objects.DailyMedicationLog
 import com.panashecare.assistant.model.objects.Intake
 import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.model.objects.Prescription
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.MedicationResult
 import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.PrescriptionResult
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.service.LocalNotificationWorker
 import com.panashecare.assistant.utils.TimeSerialisationHelper
+import com.panashecare.assistant.viewModel.shiftManagement.SingleShiftState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -37,11 +42,15 @@ import java.util.concurrent.TimeUnit
 class DailyMedicationTrackerViewModel(
     private val prescriptionRepository: PrescriptionRepository,
     private val dailyMedicationLogRepository: DailyMedicationLogRepository,
-    private val medicationRepository: MedicationRepository
+    private val medicationRepository: MedicationRepository,
+    private val userRepository: UserRepository,
+    private val userId: String
 ) : ViewModel() {
 
     var state by mutableStateOf(DailyMedicationTrackerState())
         private set
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
     private var prescriptionScheduleState =
         MutableStateFlow<PrescriptionResult>(PrescriptionResult.Loading)
     private val helper = TimeSerialisationHelper()
@@ -55,6 +64,9 @@ class DailyMedicationTrackerViewModel(
         val currentTimeOfDay = getCurrentTimeOfDay()
         state = state.copy(currentTimeOfDay = currentTimeOfDay)
 
+        // load user for authorisation checks
+        loadUser(userId)
+
         // get patient daily prescriptions
         loadPrescriptionSchedule()
 
@@ -64,6 +76,18 @@ class DailyMedicationTrackerViewModel(
         // load logs for today if any exist
         loadTodayLogs()
 
+    }
+
+    private fun loadUser(userId: String) {
+        viewModelScope.launch {
+            userRepository.getUserById(userId) { user ->
+                if (user != null) {
+                    _user.value = user
+                    state = state.copy(user = user)
+                }
+
+            }
+        }
     }
 
 
@@ -273,13 +297,16 @@ data class DailyMedicationTrackerState(
     val isEveningFirstChecked: Boolean = false,
     val isEveningSecondChecked: Boolean = false,
     val prescriptions: Prescription? = null,
+    val user: User? = null,
     val currentTimeOfDay: String = "morning"
 )
 
 class DailyMedicationTrackerViewModelFactory(
     private val prescriptionRepository: PrescriptionRepository,
     private val dailyMedicationLogRepository: DailyMedicationLogRepository,
-    private val medicationRepository: MedicationRepository
+    private val medicationRepository: MedicationRepository,
+    private val userRepository: UserRepository,
+    private val userId: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DailyMedicationTrackerViewModel::class.java)) {
@@ -287,7 +314,9 @@ class DailyMedicationTrackerViewModelFactory(
             return DailyMedicationTrackerViewModel(
                 prescriptionRepository,
                 dailyMedicationLogRepository,
-                medicationRepository
+                medicationRepository,
+                userRepository,
+                userId
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

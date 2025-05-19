@@ -63,7 +63,7 @@ object VitalsLog
 object SchedulePrescriptions
 
 @Serializable
-object DailyMedicationTracker
+data class DailyMedicationTracker(val userId: String)
 
 @Composable
 fun AppNavigation(
@@ -209,13 +209,18 @@ fun AppNavigation(
             )
         }
 
-        composable<DailyMedicationTracker> {
+        composable<DailyMedicationTracker> { backStackEntry ->
+            val dailyMedicationTracker: DailyMedicationTracker = backStackEntry.toRoute()
+            val userId = dailyMedicationTracker.userId
             DailyMedicationTrackerScreen(
                 modifier = modifier,
                 prescriptionRepository = prescriptionRepository,
                 dailyMedicationLogRepository = dailyMedicationLogRepository,
                 medicationRepository = medicationRepository,
-                navigateToStockManagement = {})
+                navigateToStockManagement = {},
+                userRepository = userRepository,
+                userId = userId
+            )
         }
 
     }

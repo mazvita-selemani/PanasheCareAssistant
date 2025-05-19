@@ -47,7 +47,7 @@ fun ViewVitals(modifier: Modifier = Modifier, navigateToCreateVitalsLog: () -> U
         verticalArrangement = Arrangement.Top
     ) {
 
-        HeaderButtonPair("View vitals", "Add new") { navigateToCreateVitalsLog() }
+        HeaderButtonPair("View vitals", "Add new", { navigateToCreateVitalsLog() })
 
         Column(
             modifier = modifier
