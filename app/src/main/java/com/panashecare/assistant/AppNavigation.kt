@@ -39,13 +39,13 @@ object Register
 data class Home(val user: String)
 
 @Serializable
-data class Profile(val user: String)
+data class Profile(val userId: String)
 
 @Serializable
-data class SingleShiftView(val shiftId: String)
+data class SingleShiftView(val shiftId: String, val userId: String)
 
 @Serializable
-data class UpdateShift(val shiftId: String)
+data class UpdateShift(val shiftId: String, val userId: String)
 
 @Serializable
 data class ShiftList(val userId: String)
@@ -102,7 +102,7 @@ fun AppNavigation(
 
         composable<Profile> { backStackEntry ->
             val profile: Profile = backStackEntry.toRoute()
-            val userId = /*profile.user*/ "-OPfMnJrTOztgSwyXJAT"
+            val userId = profile.userId
             ProfileDetailsScreen(
             modifier = modifier,
             authViewModel = authViewModel,
@@ -122,11 +122,11 @@ fun AppNavigation(
                 modifier = modifier,
                 userId = userId,
                 navigateToSingleViewForPastShift = { shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
                 },
                 navigateToSingleViewForFutureShift = { shift ->
                     Log.d("Navigation", "Shift ID: ${shift.id}")
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
                 },
                 userRepository = userRepository
             )
@@ -147,7 +147,7 @@ fun AppNavigation(
                 shiftRepository = shiftRepository,
                 modifier = modifier,
                 navigateToSingleShiftView = { shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
                 },
                 userRepository = userRepository,
                 userId = userId
@@ -157,14 +157,17 @@ fun AppNavigation(
         composable<SingleShiftView>{ backStackEntry ->
             val singleShiftView: SingleShiftView = backStackEntry.toRoute()
             val shiftId = singleShiftView.shiftId
+            val userId = singleShiftView.userId
             ViewShiftScreen(
                 modifier = modifier,
                 shiftId = shiftId,
                 shiftRepository = shiftRepository,
                 navigateToEditShift = { mShiftId ->
-                    navController.navigate(UpdateShift(shiftId = mShiftId))
+                    navController.navigate(UpdateShift(shiftId = mShiftId, userId = userId))
 
-                }
+                },
+                userRepository = userRepository,
+                userId = userId
             )
 
         }
@@ -172,12 +175,13 @@ fun AppNavigation(
         composable<UpdateShift>{ backStackEntry ->
             val updateShift: UpdateShift = backStackEntry.toRoute()
             val shiftId = updateShift.shiftId
+            val userId = updateShift.userId
             UpdateShiftScreen(
                 modifier = modifier,
                 shiftId = shiftId,
                 shiftRepository = shiftRepository,
                 userRepository = userRepository,
-                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId)) }
+                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId, userId = userId)) }
             )
 
         }

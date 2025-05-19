@@ -51,13 +51,17 @@ import java.util.Locale
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.panashecare.assistant.access.AccessControl
+import com.panashecare.assistant.access.Permission
+import com.panashecare.assistant.model.objects.User
+import com.panashecare.assistant.model.repository.UserRepository
 import kotlinx.coroutines.delay
 
 
 @Composable
-fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository, navigateToEditShift: (String) -> Unit){
+fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftRepository, navigateToEditShift: (String) -> Unit, userRepository: UserRepository, userId: String){
 
-    val viewModel = viewModel<SingleShiftViewModel>(factory = SingleShiftViewModelFactory(shiftRepository))
+    val viewModel = viewModel<SingleShiftViewModel>(factory = SingleShiftViewModelFactory(shiftRepository, userRepository, userId))
 
     LaunchedEffect(Unit){
         viewModel.getShiftById(shiftId)
@@ -67,7 +71,7 @@ fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftR
         modifier = modifier,
         state = viewModel.state,
         navigateToEditShift = { navigateToEditShift(shiftId) },
-        shiftId = shiftId
+        user = viewModel.state.user ?: User(firstName = "Loading...")
     )
 }
 
@@ -76,7 +80,7 @@ fun ViewShift(
     modifier: Modifier = Modifier,
     userProfilePicture: Painter? = null,
     state: SingleShiftState,
-    shiftId: String,
+    user: User,
     navigateToEditShift: () -> Unit
 ) {
 
@@ -132,7 +136,11 @@ fun ViewShift(
                 }
 
                 Column(horizontalAlignment = Alignment.Start) {
-                    Text(state.healthAideName, fontSize = 25.sp, fontWeight = FontWeight(400))
+                    Text(
+                        text = if(AccessControl.isAuthorized(user, Permission.UpdateShifts)) state.healthAideName else state.patientName,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight(400)
+                    )
                 }
             }
 
@@ -156,49 +164,75 @@ fun ViewShift(
                 )
             )
 
-            Log.d("ShiftCountdown", "ShiftCountdown in composable: ${state.startDate} ${state.startTime}")
-
             ShiftCountdown(state.startDate, state.startTime, appColors)
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Button(
-                    onClick = { navigateToEditShift()},
-                    modifier = Modifier
-                        .width(135.dp)
-                        .height(45.dp),
-                    shape = RoundedCornerShape(size = 47.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = appColors.primaryDark,
-                        contentColor = Color.White
-                    )
+            AccessControl.WithPermission(
+                user = user,
+                permission = Permission.UpdateShifts,
+                onAuthorized = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Edit", fontSize = 16.sp, fontWeight = FontWeight(400))
-                }
 
-                Button(
-                    onClick = { },
-                    modifier = Modifier
-                        .width(135.dp)
-                        .height(45.dp)
-                        .border(
-                            1.dp,
-                            color = appColors.primaryDark,
-                            shape = RoundedCornerShape(size = 47.dp)
-                        ),
-                    shape = RoundedCornerShape(size = 47.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = appColors.primaryDark,
-                        containerColor = Color.White
-                    )
-                ) {
-                    Text("Cancel", fontSize = 16.sp, fontWeight = FontWeight(400))
-                }
+                    Button(
+                        onClick = { navigateToEditShift()},
+                        modifier = Modifier
+                            .width(135.dp)
+                            .height(45.dp),
+                        shape = RoundedCornerShape(size = 47.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = appColors.primaryDark,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Edit", fontSize = 16.sp, fontWeight = FontWeight(400))
+                    }
 
-            }
+                    Button(
+                        onClick = { },
+                        modifier = Modifier
+                            .width(135.dp)
+                            .height(45.dp)
+                            .border(
+                                1.dp,
+                                color = appColors.primaryDark,
+                                shape = RoundedCornerShape(size = 47.dp)
+                            ),
+                        shape = RoundedCornerShape(size = 47.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = appColors.primaryDark,
+                            containerColor = Color.White
+                        )
+                    ) {
+                        Text("Cancel", fontSize = 16.sp, fontWeight = FontWeight(400))
+                    }
+
+                }
+                },
+                onDenied = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = { TODO() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(45.dp),
+                            shape = RoundedCornerShape(size = 47.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = appColors.primaryDark,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("Clock In", fontSize = 16.sp, fontWeight = FontWeight(400))
+                        }
+                    }
+                }
+            )
+
         }
 
     }
@@ -324,8 +358,6 @@ fun ShiftCountdown(startDate: String, startTime: String, appColors: AppColors) {
 
 private fun getShiftCountdownText(startDate: String, startTime: String): String {
 
-    Log.d("ShiftCountdown", "ShiftCountdown in child function: ${startDate} ${startTime}")
-
     return try {
         val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")
         val shiftDateTime = LocalDateTime.parse("$startDate $startTime", formatter)
@@ -343,8 +375,7 @@ private fun getShiftCountdownText(startDate: String, startTime: String): String 
             }
         }
     } catch (e: Exception) {
-      //  Log.e("ShiftCountdown", "Error calculating countdown: ${e.message}")
-        "Invalid date"
+       "Invalid date"
     }
 }
 
@@ -352,5 +383,12 @@ private fun getShiftCountdownText(startDate: String, startTime: String): String 
 @Preview
 @Composable
 fun PreviewViewShift() {
-   // ViewShift()
+    ViewShiftScreen(
+        modifier = Modifier,
+        navigateToEditShift = {  },
+        shiftId = "-OPuP-zzlMlFjI1WdRF-",
+        shiftRepository = ShiftRepository(),
+        userRepository = UserRepository(),
+        userId = "-OPfMnJrTOztgSwyXJAT"
+    )
 }
