@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
+import com.panashecare.assistant.access.AccessControl
+import com.panashecare.assistant.access.Permission
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.ProfileDetailsViewModel
 import com.panashecare.assistant.viewModel.ProfileState
@@ -113,12 +115,15 @@ fun ProfileDetails(
                         onValueChange = { onFullNameChange(it) },
                         error = state.errors["fullName"])
                     HorizontalDivider()
-                    EditableField(
-                        label = "Patient name",
-                        value = state.patientName,
-                        onValueChange = { onPatientNameChange(it) },
-                        error = state.errors["patientName"])
-                    HorizontalDivider()
+                    AccessControl.WithPermission(user = state.user, Permission.EditPatientDetails, onAuthorized = {
+                        EditableField(
+                            label = "Patient name",
+                            value = state.patientName,
+                            onValueChange = { onPatientNameChange(it) },
+                            error = state.errors["patientName"]
+                        )
+                        HorizontalDivider()
+                    })
                     EditableField(
                         label = "Email address",
                         value = state.email,
