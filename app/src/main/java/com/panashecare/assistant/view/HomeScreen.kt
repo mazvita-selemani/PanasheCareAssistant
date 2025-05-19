@@ -138,11 +138,6 @@ fun Home(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-
-        SearchBar()
-
-        HomePageSpacer(12)
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -244,7 +239,7 @@ fun Home(
         HomePageSpacer(10)
 
         when (val stateN = viewModel.latestFutureState.collectAsState().value) {
-            is ShiftResult.Loading -> Text("Loading...")
+            is ShiftResult.Loading -> NoShiftsMessage("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
                 ShiftCard(
                     modifier = Modifier, state.futureShift!!,
@@ -273,7 +268,7 @@ fun Home(
         HomePageSpacer(10)
 
         when (val stateN = viewModel.latestShiftState.collectAsState().value) {
-            is ShiftResult.Loading -> Text("Loading...")
+            is ShiftResult.Loading -> NoShiftsMessage("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
                 ShiftCard(
                     modifier = Modifier, state.pastShift!!,
@@ -294,7 +289,7 @@ private fun HomePageSpacer(height: Int) {
 }
 
 @Composable
-private fun NoShiftsMessage(){
+private fun NoShiftsMessage(text: String = "No past shifts found."){
     Box(
         modifier = Modifier
             .padding(vertical = 10.dp)
@@ -302,7 +297,7 @@ private fun NoShiftsMessage(){
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ){
-        Text("No past shifts found.")
+        Text(text)
     }
 }
 

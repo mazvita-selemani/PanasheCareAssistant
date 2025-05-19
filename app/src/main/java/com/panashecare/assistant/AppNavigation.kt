@@ -48,7 +48,7 @@ data class SingleShiftView(val shiftId: String)
 data class UpdateShift(val shiftId: String)
 
 @Serializable
-object ShiftList
+data class ShiftList(val userId: String)
 
 @Serializable
 object CreateNewShift
@@ -140,13 +140,17 @@ fun AppNavigation(
             )
         }
 
-        composable<ShiftList> {
+        composable<ShiftList> { backStackEntry ->
+            val shiftList: ShiftList = backStackEntry.toRoute()
+            val userId = shiftList.userId
             ShiftsOverviewScreen(
                 shiftRepository = shiftRepository,
                 modifier = modifier,
                 navigateToSingleShiftView = { shift ->
                     navController.navigate(SingleShiftView(shiftId = shift.id!!))
-                }
+                },
+                userRepository = userRepository,
+                userId = userId
             )
         }
 
