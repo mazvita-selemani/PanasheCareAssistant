@@ -57,7 +57,7 @@ object CreateNewShift
 object VitalsList
 
 @Serializable
-object VitalsLog
+data class VitalsLog(val userId: String)
 
 @Serializable
 object SchedulePrescriptions
@@ -186,11 +186,16 @@ fun AppNavigation(
 
         }
 
-        composable<VitalsLog> {
+        composable<VitalsLog> { backStackEntry ->
+            val vitalsLog: VitalsLog = backStackEntry.toRoute()
+            val userId = vitalsLog.userId
             LogVitalsScreen(
                 modifier = modifier,
                 vitalsRepository = vitalsRepository,
-                navigateToVitalsList = { navController.navigate(VitalsList) })
+                navigateToVitalsList = { navController.navigate(VitalsList) },
+                userRepository = userRepository,
+                userId = userId
+            )
         }
 
         composable<VitalsList> {
