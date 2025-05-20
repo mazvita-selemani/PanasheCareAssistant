@@ -40,14 +40,15 @@ import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.repository.ShiftRepository
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewState
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewModel
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewViewModelFactory
 
 @Composable
-fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, modifier: Modifier, navigateToSingleShiftView: (Shift) -> Unit) {
+fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, userRepository: UserRepository,userId: String,modifier: Modifier, navigateToSingleShiftView: (Shift) -> Unit) {
 
-    val viewModel = viewModel<ShiftsOverviewViewModel>(factory = ShiftsOverviewViewModelFactory(shiftRepository))
+    val viewModel = viewModel<ShiftsOverviewViewModel>(factory = ShiftsOverviewViewModelFactory(shiftRepository, userRepository, userId))
 
 
     ShiftsOverview(
@@ -92,7 +93,6 @@ private fun ShiftsOverview(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            // Upcoming Button
             Button(
                 modifier = Modifier
                     .width(105.dp)
@@ -252,6 +252,12 @@ fun CustomSpacer(height: Int) {
 
 @Preview
 @Composable
-fun PreviewshiftsOverview() {
- //   ShiftsOverviewScreen(ShiftRepository())
+fun PreviewShiftsOverview() {
+   ShiftsOverviewScreen(
+       ShiftRepository(),
+       UserRepository(),
+       "-OPpePiI_ULo4Bfx6UXD",
+       modifier = Modifier,
+       navigateToSingleShiftView = {}
+   )
 }

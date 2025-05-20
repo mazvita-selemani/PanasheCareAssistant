@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,7 @@ class ProfileDetailsViewModel(private val userRepository: UserRepository, privat
                 _state.update { it.copy(patientName = "${user.patientFirstName} ${user.patientLastName}") }
                 _state.update { it.copy(email = user.email ?: "") }
                 _state.update { it.copy(phone = user.phoneNumber ?: "") }
+                _state.update { it.copy(user = user) }
                 copyToOriginalValues()
             }
         }
@@ -142,6 +144,7 @@ data class ProfileState(
     val patientName: String = "",
     val email: String = "",
     val phone: String = "",
+    val user: User? = null,
 
     // Original full names and other fields for comparison
     val originalFullName: String = "",

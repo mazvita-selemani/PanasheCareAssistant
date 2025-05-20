@@ -39,7 +39,7 @@ import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryV
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun ManageMedicationInventoryScreen(modifier: Modifier = Modifier, medicationRepository: MedicationRepository) {
+fun ManageMedicationInventoryScreen(modifier: Modifier, medicationRepository: MedicationRepository, navigateToDailyMedicationTracker: () -> Unit) {
 
     val viewModel = viewModel<ManageMedicationInventoryViewModel>(
         factory = ManageMedicationInventoryViewModelFactory(medicationRepository = medicationRepository)
@@ -48,13 +48,15 @@ fun ManageMedicationInventoryScreen(modifier: Modifier = Modifier, medicationRep
     ManageMedicationInventory(
         modifier = modifier,
         state = viewModel.state,
-        result = viewModel.medicationList
+        result = viewModel.medicationList,
+        navigateToDailyMedicationTracker = navigateToDailyMedicationTracker
     )
 }
 
 @Composable
 private fun ManageMedicationInventory(
     modifier: Modifier = Modifier,
+    navigateToDailyMedicationTracker: () -> Unit,
     state: ManageInventoryState,
     result: MutableStateFlow<MedicationResult>
 ) {
@@ -78,7 +80,7 @@ private fun ManageMedicationInventory(
         )
 
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth()
                 .heightIn(450.dp, 800.dp)
@@ -89,7 +91,7 @@ private fun ManageMedicationInventory(
 
             when (val stateN = result.collectAsState().value) {
                 is MedicationResult.Loading -> Column(
-                    modifier = modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -108,7 +110,7 @@ private fun ManageMedicationInventory(
 
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .align(Alignment.End)
                 .padding(5.dp)
         ) {
@@ -131,13 +133,13 @@ private fun ManageMedicationInventory(
 
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(5.dp)
         ) {
             Button(
                 onClick = {
-                    //  navigateToStockManagement() // check for changes otherwise remain disabled
+                      navigateToDailyMedicationTracker() // check for changes otherwise remain disabled
                 },
                 modifier = Modifier
                     .width(190.dp)
@@ -158,5 +160,5 @@ private fun ManageMedicationInventory(
 @Preview
 @Composable
 fun PreviewManageInventory() {
- //   ManageMedicationInventoryScreen(MedicationRepository())
+   ManageMedicationInventoryScreen(Modifier, MedicationRepository(), {})
 }

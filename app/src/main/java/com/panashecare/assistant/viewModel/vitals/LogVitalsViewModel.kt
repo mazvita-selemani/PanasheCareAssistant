@@ -7,15 +7,42 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.objects.Vitals
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
+import com.panashecare.assistant.viewModel.shiftManagement.SingleShiftState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LogVitalsViewModel(
-    private val vitalsRepository: VitalsRepository
-): ViewModel() {
+    private val vitalsRepository: VitalsRepository,
+    private val userRepository: UserRepository,
+    private val userId: String
+) : ViewModel() {
 
     var state by mutableStateOf(LogVitalsState())
+        private set
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
+
+    init {
+        loadUser(userId)
+    }
+
+    private fun loadUser(userId: String) {
+        viewModelScope.launch {
+            userRepository.getUserById(userId) { user ->
+                if (user != null) {
+                    _user.value = user
+                    state = state.copy(user = user)
+                }
+
+            }
+        }
+    }
 
     fun updateHeartRate(newValue: String){
         state = state.copy(heartRateRecord = newValue)
@@ -75,13 +102,13 @@ class LogVitalsViewModel(
 
 }
 
-class LogVitalsViewModelFactory(private val vitalsRepository: VitalsRepository): ViewModelProvider.Factory{
+class LogVitalsViewModelFactory(private val vitalsRepository: VitalsRepository, private val userRepository: UserRepository, private val userId: String): ViewModelProvider.Factory{
 
     // checking that the viewmodel can be created
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(LogVitalsViewModel::class.java)){
             @Suppress("UNCHECKED_CAST")
-            return LogVitalsViewModel(vitalsRepository) as T
+            return LogVitalsViewModel(vitalsRepository, userRepository, userId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -92,5 +119,6 @@ data class LogVitalsState(
     val heartRateRecord: String? = null,
     val oxygenSaturationRecord: String? =null,
     val bloodPressureRecord: String? = null,
+    val user: User? = null,
     val errors: Map<String, String> = emptyMap()
 )

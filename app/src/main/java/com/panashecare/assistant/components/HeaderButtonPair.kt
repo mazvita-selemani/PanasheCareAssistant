@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.panashecare.assistant.AppColors
 
 @Composable
-fun HeaderButtonPair(pageHeader: String, headerButton: String, onNavigationClick: () -> Unit) {
+fun HeaderButtonPair(pageHeader: String, headerButton: String,onNavigationClick: () -> Unit, width: Int = 155) {
 
     val appColors = AppColors()
 
@@ -44,7 +44,7 @@ fun HeaderButtonPair(pageHeader: String, headerButton: String, onNavigationClick
         Button(
             onClick = { onNavigationClick()},
             modifier = Modifier
-                .width(155.dp)
+                .width(width.dp)
                 .height(45.dp)
                 .background(
                     color = appColors.primaryDark,

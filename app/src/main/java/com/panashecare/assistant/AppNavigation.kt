@@ -1,7 +1,11 @@
 package com.panashecare.assistant
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,6 +23,7 @@ import com.panashecare.assistant.view.ProfileDetailsScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
 import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
+import com.panashecare.assistant.view.medication.ManageMedicationInventoryScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
 import com.panashecare.assistant.view.shiftManagement.CreateNewShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ShiftsOverviewScreen
@@ -26,6 +31,7 @@ import com.panashecare.assistant.view.shiftManagement.UpdateShiftScreen
 import com.panashecare.assistant.view.shiftManagement.ViewShiftScreen
 import com.panashecare.assistant.view.vitals.LogVitalsScreen
 import com.panashecare.assistant.view.vitals.ViewVitalsScreen
+import com.panashecare.assistant.viewModel.UserSessionViewModel
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
 import kotlinx.serialization.Serializable
 
@@ -36,39 +42,43 @@ object Login
 object Register
 
 @Serializable
-data class Home(val user: String)
+data class Home(val user: String? = null)
 
 @Serializable
-data class Profile(val user: String)
+data class Profile(val userId: String? = null)
 
 @Serializable
-data class SingleShiftView(val shiftId: String)
+data class SingleShiftView(val shiftId: String? = null, val userId: String? = null)
 
 @Serializable
-data class UpdateShift(val shiftId: String)
+data class UpdateShift(val shiftId: String? = null, val userId: String? = null)
 
 @Serializable
-object ShiftList
+data class ShiftList(val userId: String? = null)
 
 @Serializable
-object CreateNewShift
+data class CreateNewShift(val userId: String? = null)
 
 @Serializable
-object VitalsList
+data class VitalsList(val userId: String? = null)
 
 @Serializable
-object VitalsLog
+data class VitalsLog(val userId: String? = null)
 
 @Serializable
-object SchedulePrescriptions
+data class SchedulePrescriptions(val userId: String? = null)
 
 @Serializable
-object DailyMedicationTracker
+data class DailyMedicationTracker(val userId: String? = null)
+
+@Serializable
+data class StockManagement(val userId: String? = null)
 
 @Composable
 fun AppNavigation(
     modifier: Modifier,
     authViewModel: AuthViewModel,
+    userSessionViewModel: UserSessionViewModel,
     userRepository: UserRepository,
     shiftRepository: ShiftRepository,
     vitalsRepository: VitalsRepository,
@@ -100,9 +110,8 @@ fun AppNavigation(
             )
         }
 
-        composable<Profile> { backStackEntry ->
-            val profile: Profile = backStackEntry.toRoute()
-            val userId = /*profile.user*/ "-OPfMnJrTOztgSwyXJAT"
+        composable<Profile> {
+            val userId = userSessionViewModel.userId!!
             ProfileDetailsScreen(
             modifier = modifier,
             authViewModel = authViewModel,
@@ -113,51 +122,63 @@ fun AppNavigation(
 
         composable<Home> { backStackEntry ->
             val home: Home = backStackEntry.toRoute()
-            val userId = home.user
+            val userId = if(home.user != null) home.user else userSessionViewModel.userId!!
+            if(userSessionViewModel.userId == null) userSessionViewModel.setUserId(userId) // initialise user id for session
             HomeScreen(
-                navigateToProfile = { navController.navigate(SchedulePrescriptions) },
+                navigateToProfile = { navController.navigate(Profile(userId = userId)) },
                 repository = shiftRepository,
-                navigateToCreateShift = { navController.navigate(CreateNewShift) },
-                navigateToShiftList = { navController.navigate(ShiftList) },
+                navigateToCreateShift = { navController.navigate(CreateNewShift(userId = userId)) },
+                navigateToShiftList = { navController.navigate(ShiftList(userId = userId)) },
                 modifier = modifier,
                 userId = userId,
-                navigateToSingleViewForPastShift = {shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))},
-                navigateToSingleViewForFutureShift = {shift ->
-                    Log.d("Navigation", "Shift ID: ${shift.id}")
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))}
+                navigateToSingleViewForPastShift = { shift ->
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                },
+                navigateToSingleViewForFutureShift = { shift ->
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                },
+                userRepository = userRepository
             )
         }
 
-        composable<CreateNewShift> {
+        composable<CreateNewShift> { backStackEntry ->
+            val createNewShift: CreateNewShift = backStackEntry.toRoute()
+            val userId = createNewShift.userId
             CreateNewShiftScreen(
                 repository = userRepository, shiftRepository = shiftRepository,
-                navigateToHome = { navController.navigate(Home(user = "placeHolder")) },
+                navigateToHome = { navController.navigate(Home(user = userId)) },
                 modifier = modifier
             )
         }
 
-        composable<ShiftList> {
+        composable<ShiftList> { backStackEntry ->
+            val shiftList: ShiftList = backStackEntry.toRoute()
+            val userId = shiftList.userId
             ShiftsOverviewScreen(
                 shiftRepository = shiftRepository,
                 modifier = modifier,
                 navigateToSingleShiftView = { shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!))
-                }
+                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                },
+                userRepository = userRepository,
+                userId = userId ?: userSessionViewModel.userId!!
             )
         }
 
         composable<SingleShiftView>{ backStackEntry ->
             val singleShiftView: SingleShiftView = backStackEntry.toRoute()
             val shiftId = singleShiftView.shiftId
+            val userId = singleShiftView.userId
             ViewShiftScreen(
                 modifier = modifier,
-                shiftId = shiftId,
+                shiftId = shiftId ?: "",
                 shiftRepository = shiftRepository,
                 navigateToEditShift = { mShiftId ->
-                    navController.navigate(UpdateShift(shiftId = mShiftId))
+                    navController.navigate(UpdateShift(shiftId = mShiftId, userId = userId))
 
-                }
+                },
+                userRepository = userRepository,
+                userId = userId ?: userSessionViewModel.userId!!
             )
 
         }
@@ -165,47 +186,88 @@ fun AppNavigation(
         composable<UpdateShift>{ backStackEntry ->
             val updateShift: UpdateShift = backStackEntry.toRoute()
             val shiftId = updateShift.shiftId
+            val userId = updateShift.userId
             UpdateShiftScreen(
                 modifier = modifier,
-                shiftId = shiftId,
+                shiftId = shiftId ?: "",
                 shiftRepository = shiftRepository,
                 userRepository = userRepository,
-                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId)) }
+                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId, userId = userId)) }
             )
 
         }
 
-        composable<VitalsLog> {
+        composable<VitalsLog> { backStackEntry ->
+            val vitalsLog: VitalsLog = backStackEntry.toRoute()
+            val userId = vitalsLog.userId
             LogVitalsScreen(
                 modifier = modifier,
                 vitalsRepository = vitalsRepository,
-                navigateToVitalsList = { navController.navigate(VitalsList) })
-        }
-
-        composable<VitalsList> {
-            ViewVitalsScreen(
-                modifier = modifier,
-                vitalsRepository = vitalsRepository,
-                navigateToCreateVitalsLog = { navController.navigate(VitalsLog) })
-        }
-
-        composable<SchedulePrescriptions> {
-            SchedulePrescriptionsScreen(
-                modifier = modifier,
-                prescriptionRepository = prescriptionRepository,
-                medicationRepository = medicationRepository,
-                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker) }
+                navigateToVitalsList = { navController.navigate(VitalsList(userId = userId)) },
+                userRepository = userRepository,
+                userId = userId!!
             )
         }
 
-        composable<DailyMedicationTracker> {
-            DailyMedicationTrackerScreen(
-                modifier = modifier,
-                prescriptionRepository = prescriptionRepository,
-                dailyMedicationLogRepository = dailyMedicationLogRepository,
-                medicationRepository = medicationRepository,
-                navigateToStockManagement = {})
+        composable<VitalsList> {
+            val userId = userSessionViewModel.userId
+            if (userId == null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                ViewVitalsScreen(
+                    modifier = modifier,
+                    vitalsRepository = vitalsRepository,
+                    navigateToCreateVitalsLog = { navController.navigate(VitalsLog(userId = userId)) })
+            }
         }
+
+        composable<SchedulePrescriptions> {
+            val userId = userSessionViewModel.userId
+            if (userId == null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                SchedulePrescriptionsScreen(
+                    modifier = modifier,
+                    prescriptionRepository = prescriptionRepository,
+                    medicationRepository = medicationRepository,
+                    navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) }
+                )
+            }
+        }
+
+        composable<DailyMedicationTracker> {
+            val userId = userSessionViewModel.userId
+            if (userId == null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                DailyMedicationTrackerScreen(
+                    modifier = modifier,
+                    userId = userId,
+                    medicationRepository = medicationRepository,
+                    prescriptionRepository = prescriptionRepository,
+                    dailyMedicationLogRepository = dailyMedicationLogRepository,
+                    navigateToStockManagement = { navController.navigate(StockManagement(userId = userId)) },
+                    userRepository = userRepository
+                )
+            }
+        }
+
+        composable<StockManagement> { backStackEntry ->
+            val stockManagement: StockManagement = backStackEntry.toRoute()
+            val userId = stockManagement.userId
+            ManageMedicationInventoryScreen(
+                modifier = modifier,
+                medicationRepository = medicationRepository,
+                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) }
+            )
+        }
+
 
     }
 }

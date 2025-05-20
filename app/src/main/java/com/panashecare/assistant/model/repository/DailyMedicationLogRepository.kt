@@ -16,18 +16,14 @@ class DailyMedicationLogRepository(
     fun submitLog(log: DailyMedicationLog, onComplete: (Boolean) -> Unit) {
         database.child(log.id.toString()).setValue(log.toJson())
             .addOnCompleteListener { task ->
-                Log.d("Panashe Logs", "created Daily Log successfully")
                 onComplete(task.isSuccessful)
             }
     }
 
     fun getLogByDateId(id: String, callback: (DailyMedicationLog?) -> Unit) {
         database.get().addOnSuccessListener { snapshot ->
-            Log.d("Panashe Logs", "getting log")
-            Log.d("Panashe Logs", "$snapshot")
             val matchedLog = snapshot.children.mapNotNull { it.getValue(DailyMedicationLog::class.java) }
                 .find { it.id == id }
-            Log.d("Panashe Logs", "matched log: $matchedLog")
             callback(matchedLog)
         }.addOnFailureListener {
             callback(null)

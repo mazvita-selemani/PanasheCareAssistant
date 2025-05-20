@@ -36,11 +36,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
+import com.panashecare.assistant.access.AccessControl
+import com.panashecare.assistant.access.Permission
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.model.objects.Medication
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
+import com.panashecare.assistant.model.repository.UserRepository
+import com.panashecare.assistant.view.shiftManagement.CustomSpacer
 import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerState
 import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerViewModel
 import com.panashecare.assistant.viewModel.medication.DailyMedicationTrackerViewModelFactory
@@ -51,6 +56,8 @@ fun DailyMedicationTrackerScreen(
     prescriptionRepository: PrescriptionRepository,
     dailyMedicationLogRepository: DailyMedicationLogRepository,
     medicationRepository: MedicationRepository,
+    userRepository: UserRepository,
+    userId: String,
     navigateToStockManagement: () -> Unit
 ) {
 
@@ -58,7 +65,9 @@ fun DailyMedicationTrackerScreen(
         factory = DailyMedicationTrackerViewModelFactory(
             prescriptionRepository,
             dailyMedicationLogRepository,
-            medicationRepository
+            medicationRepository,
+            userRepository,
+            userId
         )
     )
 
@@ -73,7 +82,8 @@ fun DailyMedicationTrackerScreen(
         onEveningSecondCheckedChange = viewModel::updateEveningSecondChecked,
         onSubmitLog = viewModel::confirmMedicationIntake,
         getMedicationById = { id -> viewModel.getMedicationById(id) },
-        navigateToStockManagement = navigateToStockManagement
+        navigateToStockManagement = navigateToStockManagement,
+        user = viewModel.user.value ?: User(firstName = "Loading...")
     )
 
 }
@@ -83,6 +93,7 @@ fun DailyMedicationTracker(
     modifier: Modifier = Modifier,
     state: DailyMedicationTrackerState,
     onSubmitLog: (String) -> Unit,
+    user: User,
     onMorningFirstCheckedChange: (Boolean) -> Unit,
     onMorningSecondCheckedChange: (Boolean) -> Unit,
     onAfternoonFirstCheckedChange: (Boolean) -> Unit,
@@ -109,60 +120,66 @@ fun DailyMedicationTracker(
         HeaderButtonPair(
             pageHeader = "Daily Medication Tracker",
             headerButton = "Submit Log",
-            onNavigationClick = { onSubmitLog(state.currentTimeOfDay) }
+            onNavigationClick = { onSubmitLog(state.currentTimeOfDay) },
+            width = 140
         )
 
-        if (true /*todo replace with admin check*/) {
-            Row(
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .height(71.dp)
-                    .background(color = Color(0xFFE7F7FA), shape = RoundedCornerShape(18.dp))
-                    .padding(horizontal = 13.dp, vertical = 15.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
+        CustomSpacer(10)
+
+        AccessControl.WithPermission(
+            user = user,
+            permission = Permission.UpdateInventory,
+            onAuthorized = {
+                Row(
                     modifier = Modifier
-                        .padding(end = 10.dp)
-                        .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(25.dp)
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
+                        .height(71.dp)
+                        .background(color = Color(0xFFE7F7FA), shape = RoundedCornerShape(18.dp))
+                        .padding(horizontal = 13.dp, vertical = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .background(
+                                color = Color.White,
+                                shape = RoundedCornerShape(25.dp)
+                            )
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.bxs_first_aid),
+                            contentDescription = null
                         )
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.bxs_first_aid),
-                        contentDescription = null
-                    )
-                }
+                    }
 
-                Text(
-                    text = "Would you like to update\nyour stock?",
-                    style = TextStyle(
-                        fontSize = 13.sp,
+                    Text(
+                        text = "Would you like to update\nyour stock?",
+                        style = TextStyle(
+                            fontSize = 13.sp,
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                Button(
-                    onClick = {
-                        navigateToStockManagement()
-                    },
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(45.dp),
-                    shape = RoundedCornerShape(size = 47.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = appColors.primaryDark,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Update", fontSize = 16.sp, fontWeight = FontWeight(400))
+                    Button(
+                        onClick = {
+                            navigateToStockManagement()
+                        },
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(45.dp),
+                        shape = RoundedCornerShape(size = 47.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = appColors.primaryDark,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Update", fontSize = 16.sp, fontWeight = FontWeight(400))
+                    }
                 }
-            }
-        }
+            })
 
 
         LazyColumn(
@@ -243,5 +260,8 @@ fun PreviewTracker() {
         PrescriptionRepository(),
         DailyMedicationLogRepository(),
         MedicationRepository(),
-        {})
+        userId = "3",
+        navigateToStockManagement = { },
+        userRepository = UserRepository()
+    )
 }

@@ -41,13 +41,14 @@ import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
+import com.panashecare.assistant.viewModel.UserSessionViewModel
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
 
 sealed class NavDestination(val title: String, val route: Any, val routeAsString: String, val icon: ImageVector){
-    object Home: NavDestination(title = "Home", route = com.panashecare.assistant.Home, routeAsString= "com.panashecare.assistant.Home", icon = Icons.Default.Home)
-    object Vitals: NavDestination(title = "Vitals", route = VitalsList, routeAsString = "com.panashecare.assistant.VitalsList", icon = Icons.Filled.Favorite)
-    object Meds: NavDestination(title = "Meds", route = DailyMedicationTracker, routeAsString = "com.panashecare.assistant.DailyMedicationTracker", icon = Icons.Default.Info)
-    object Profile: NavDestination(title = "Profile", route = com.panashecare.assistant.Profile, routeAsString = "com.panashecare.assistant.Profile",  icon = Icons.Default.Person)
+    object Home: NavDestination(title = "Home", route = Home(), routeAsString= "com.panashecare.assistant.Home", icon = Icons.Default.Home)
+    object Vitals: NavDestination(title = "Vitals", route = VitalsList(), routeAsString = "com.panashecare.assistant.VitalsList", icon = Icons.Filled.Favorite)
+    object Meds: NavDestination(title = "Meds", route = DailyMedicationTracker(), routeAsString = "com.panashecare.assistant.DailyMedicationTracker", icon = Icons.Default.Info)
+    object Profile: NavDestination(title = "Profile", route = Profile(), routeAsString = "com.panashecare.assistant.Profile",  icon = Icons.Default.Person)
 }
 
 class MainActivity : ComponentActivity() {
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val authViewModel: AuthViewModel by viewModels()
+        val userSessionViewModel: UserSessionViewModel by viewModels()
         val userRepository by lazy { UserRepository() }
         val shiftRepository by lazy { ShiftRepository() }
         val vitalsRepository by lazy { VitalsRepository() }
@@ -149,6 +151,7 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(
                         modifier = Modifier.padding(innerPadding),
                         authViewModel = authViewModel,
+                        userSessionViewModel = userSessionViewModel,
                         userRepository = userRepository,
                         shiftRepository = shiftRepository,
                         vitalsRepository = vitalsRepository,

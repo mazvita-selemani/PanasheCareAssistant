@@ -30,6 +30,7 @@ import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.components.HeaderButtonPair
 import com.panashecare.assistant.model.objects.Vitals
+import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
 import com.panashecare.assistant.utils.TimeSerialisationHelper
 import com.panashecare.assistant.view.shiftManagement.CustomSpacer
@@ -41,9 +42,9 @@ import java.time.ZoneId
 
 
 @Composable
-fun LogVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepository, navigateToVitalsList: () -> Unit) {
+fun LogVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepository, navigateToVitalsList: () -> Unit, userRepository: UserRepository, userId: String) {
 
-    val viewModel = viewModel<LogVitalsViewModel>(factory = LogVitalsViewModelFactory(vitalsRepository))
+    val viewModel = viewModel<LogVitalsViewModel>(factory = LogVitalsViewModelFactory(vitalsRepository, userRepository, userId))
 
     val state = viewModel.state
     val helper = TimeSerialisationHelper()
@@ -54,7 +55,7 @@ fun LogVitalsScreen(modifier: Modifier = Modifier, vitalsRepository: VitalsRepos
         .toEpochMilli())
 
     val vitals = Vitals(
-        loggerId = "1234",
+        loggerId = state.user?.getFullName(),
         adminId = "1234",
         oxygenSaturationRecord = state.oxygenSaturationRecord ?: "",
         heartRateRecord = state.heartRateRecord ?: "",
@@ -94,7 +95,7 @@ fun LogVitals(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        HeaderButtonPair("Update Shift", "Help?", {})
+        HeaderButtonPair("Log Vitals", "Help?", {})
 
         CustomSpacer(10)
 
@@ -102,7 +103,7 @@ fun LogVitals(
             modifier = Modifier
                 .align(Alignment.Start)
                 .fillMaxWidth()
-                .fillMaxHeight()
+                .height(450.dp)
                 .background(
                     color = appColors.surface,
                     shape = RoundedCornerShape(size = 18.dp)
@@ -185,7 +186,7 @@ fun LogVitals(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(150.dp)
                 .background(color = appColors.surface, shape = RoundedCornerShape(size = 20.dp))
                 .padding(10.dp),
             verticalArrangement = Arrangement.Center,
@@ -249,7 +250,10 @@ fun LogVitals(
 @Composable
 fun PreviewLogVitals() {
     LogVitalsScreen(
+        modifier = Modifier,
         navigateToVitalsList = {},
-        vitalsRepository = VitalsRepository()
+        vitalsRepository = VitalsRepository(),
+        userRepository = UserRepository(),
+        userId = "3"
     )
 }

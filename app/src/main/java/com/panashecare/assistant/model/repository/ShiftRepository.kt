@@ -7,8 +7,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.ShiftPeriod
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.utils.ShiftPeriodHelper
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -54,28 +56,39 @@ class ShiftRepository(
     }
 
 
-    fun getLatestPastShift(loadFullList: Boolean = false): Flow<ShiftResult> = callbackFlow {
-        trySend(ShiftResult.Loading) // Start with loading state
+    private fun getShiftsFlow(
+        loadFullList: Boolean = false,
+        period: ShiftPeriod,
+        user: User? = null
+    ): Flow<ShiftResult> = callbackFlow {
+        trySend(ShiftResult.Loading)
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val shiftList = snapshot.children.mapNotNull { it.getValue(Shift::class.java) }
-                val pastShifts = shiftList.filter { shiftPeriodHelper.calculateShiftPeriod(it) == ShiftPeriod.PAST }
-
-                // load all past shifts
-                if(loadFullList){
-                    trySend(ShiftResult.Success(shiftList = pastShifts))
-                    return
+                val allShifts = snapshot.children.mapNotNull { it.getValue(Shift::class.java) }
+                val filteredShifts = allShifts.filter { shiftPeriodHelper.calculateShiftPeriod(it) == period }
+                Log.d("HomeScreen in getShiftsFlow", "User: $user")
+                val finalShifts = if (user?.userType == UserType.CARER && user.id != null) {
+                    filteredShifts.filter { it.healthAideName?.id == user.id }
+                } else {
+                    filteredShifts
                 }
 
-                // get latest past shift
-                val latestShift = shiftPeriodHelper.findClosestPastShift(pastShifts)
-                trySend(ShiftResult.Success(latestShift))
+                if (loadFullList) {
+                    trySend(ShiftResult.Success(shiftList = finalShifts))
+                } else {
+                    val latestShift = when (period) {
+                        ShiftPeriod.PAST -> shiftPeriodHelper.findClosestPastShift(finalShifts)
+                        ShiftPeriod.FUTURE -> shiftPeriodHelper.findClosestFutureShift(finalShifts)
+                        else -> null // Handle other periods if needed
+                    }
+                    trySend(ShiftResult.Success(shift = latestShift))
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 trySend(ShiftResult.Error("Database error: ${error.message}"))
-                close(error.toException()) // Close the flow on failure
+                close(error.toException())
             }
         }
 
@@ -83,38 +96,13 @@ class ShiftRepository(
         awaitClose { database.removeEventListener(listener) }
     }
 
-
-    fun getLatestFutureShift(loadFullList: Boolean = false): Flow<ShiftResult> = callbackFlow {
-        trySend(ShiftResult.Loading) // Start with loading state
-
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val shiftList = snapshot.children.mapNotNull { it.getValue(Shift::class.java) }
-                val futureShifts = shiftList.filter { shiftPeriodHelper.calculateShiftPeriod(it) == ShiftPeriod.FUTURE }
-
-                // load all future shifts
-                if(loadFullList){
-                    trySend(ShiftResult.Success(shiftList = futureShifts))
-                    return
-                }
-
-                // get latest future shift
-
-                val latestShift = shiftPeriodHelper.findClosestFutureShift(futureShifts)
-
-                trySend(ShiftResult.Success(latestShift))
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                trySend(ShiftResult.Error("Database error: ${error.message}"))
-                close(error.toException()) // Close the flow on failure
-            }
-        }
-
-        database.addValueEventListener(listener)
-        awaitClose { database.removeEventListener(listener) }
+    fun getLatestPastShift(loadFullList: Boolean = false, user: User? = null): Flow<ShiftResult> {
+        return getShiftsFlow(loadFullList, ShiftPeriod.PAST, user)
     }
 
+    fun getLatestFutureShift(loadFullList: Boolean = false, user: User? = null): Flow<ShiftResult> {
+        return getShiftsFlow(loadFullList, ShiftPeriod.FUTURE, user)
+    }
     fun createShift(shift: Shift, onComplete: (Boolean) -> Unit) {
         Log.d("Register", "About to create shift")
         val shiftId = database.push().key

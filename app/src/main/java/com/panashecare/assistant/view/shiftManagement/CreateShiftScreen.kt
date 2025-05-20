@@ -152,7 +152,7 @@ fun CreateNewShift(
         verticalArrangement = Arrangement.Top
     ) {
 
-        HeaderButtonPair("New Shift", "Send Request") { createShift() }
+        HeaderButtonPair("New Shift", "Send Request",  { createShift() })
 
         CustomSpacer(10)
 
