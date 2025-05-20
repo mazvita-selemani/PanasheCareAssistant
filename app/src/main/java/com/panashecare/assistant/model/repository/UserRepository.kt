@@ -9,6 +9,8 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 import com.panashecare.assistant.access.UserType
+import com.panashecare.assistant.model.UserProfileImages
+import com.panashecare.assistant.model.objects.Gender
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.User
 import kotlinx.coroutines.channels.awaitClose
@@ -107,19 +109,20 @@ class UserRepository(
     }
 
     fun saveUser(user: User, onComplete: (Boolean) -> Unit) {
-        Log.d("Register", "About to save user")
         val userId = database.push().key
-        user.id = userId
-        database.child(user.id.toString()).setValue(user.toJson())
+        val image = UserProfileImages().getRandomImageForGender(user.gender ?: Gender.OTHER)
+        val mUser = user.copy(id = userId, profileImageRef = image)
+
+        database.child(mUser.id.toString()).setValue(mUser.toJson())
             .addOnCompleteListener { task ->
                 Log.d("Register", "saved user successfully")
                 onComplete(task.isSuccessful)
             }
-        Log.d("Register", "saved user successfully")
+
     }
 
-    fun deleteUser(id: Int) {
-        database.child("$id")
+    fun deleteUser(id: String) {
+        database.child(id).removeValue()
     }
 
     fun updateUser(id: String, fields: Map<String, String>) {
