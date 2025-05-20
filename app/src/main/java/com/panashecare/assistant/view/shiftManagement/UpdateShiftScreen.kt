@@ -110,6 +110,7 @@ fun UpdateShiftScreen(
     UpdateShift(
         modifier = modifier,
         state = state,
+        userProfilePicture = state.profileImageRef,
         updateStartDate = viewModel::updateStartDate,
         updateEndDate = viewModel::updateEndDate,
         updateStartTime = viewModel::updateStartTime,
@@ -144,6 +145,7 @@ fun UpdateShift(
     navigateToSingleShiftView: () -> Unit,
     state: UpdateShiftState,
     showDropDownMenu: Boolean,
+    userProfilePicture: Int? = null,
     updateShowDropDownMenu: (Boolean) -> Unit,
     isDropDownMenuExpanded: Boolean,
     updateIsDropDownExpanded: (Boolean) -> Unit,
@@ -221,14 +223,14 @@ fun UpdateShift(
                         .fillMaxHeight(0.6f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ProfileCircular(profilePictureSize = 90, navigateToProfile = {})
+                    ProfileCircular(profilePictureSize = 90, navigateToProfile = {}, profileResourceId = userProfilePicture)
 
                     Spacer(modifier = Modifier.width(20.dp))
 
                     Column(horizontalAlignment = Alignment.Start) {
                         Text(state.healthAideName, fontSize = 25.sp, fontWeight = FontWeight(400))
                         Text(
-                            "Contact: +44 73689456",
+                            text = state.phoneNumber.ifEmpty { "No Phone Number" },
                             fontSize = 18.sp,
                             fontWeight = FontWeight(300)
                         )
@@ -373,45 +375,6 @@ fun UpdateShift(
             }
         }
 
-
-
-        CustomSpacer(10)
-
-        // Notes section
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(color = appColors.surface, shape = RoundedCornerShape(size = 20.dp))
-                .padding(10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Notes",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight(500),
-                    color = appColors.formTextPrimary,
-                )
-            )
-
-            CustomSpacer(5)
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("(Optional)") },
-                modifier = modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = appColors.formTextPrimary,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-        }
     }
 }
 

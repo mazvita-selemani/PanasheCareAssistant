@@ -70,6 +70,7 @@ fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftR
     ViewShift(
         modifier = modifier,
         state = viewModel.state,
+        userProfilePicture = viewModel.state.profileImageRef,
         navigateToEditShift = { navigateToEditShift(shiftId) },
         user = viewModel.state.user ?: User(firstName = "Loading...")
     )
@@ -78,7 +79,7 @@ fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftR
 @Composable
 fun ViewShift(
     modifier: Modifier = Modifier,
-    userProfilePicture: Painter? = null,
+    userProfilePicture: Int? = null,
     state: SingleShiftState,
     user: User,
     navigateToEditShift: () -> Unit
@@ -116,23 +117,15 @@ fun ViewShift(
                         )
 
                 ) {
-                    if (userProfilePicture != null) {
+
                         Image(
-                            userProfilePicture,
+                            painter = painterResource(id = userProfilePicture ?: R.drawable.person_profile),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(2.dp)
                         )
-                    }
 
-                    if (userProfilePicture == null) {
-                        Text(
-                            text = "Could not load the image",
-                            modifier = Modifier.align(Alignment.Center),
-                            textAlign = TextAlign.Center
-                        )
-                    }
                 }
 
                 Column(horizontalAlignment = Alignment.Start) {

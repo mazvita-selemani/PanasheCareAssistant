@@ -39,6 +39,7 @@ import com.panashecare.assistant.R
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
 import com.panashecare.assistant.model.objects.Shift
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.shiftManagement.ShiftsOverviewState
@@ -220,6 +221,7 @@ private fun ShiftsOverview(
                     ) { _, shiftSingle ->
                         ShiftCard(
                             shift = shiftSingle,
+                            user = state.user ?: User(),
                             navigateToSingleShiftView = {
                                 onSelectedShiftFocus(shiftSingle)
                                 navigateToSingleShiftView() },

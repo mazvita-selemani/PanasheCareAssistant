@@ -57,11 +57,10 @@ class UpdateShiftViewModel(
         state = state.copy(endDate = convertStringToLong(shift.shiftEndDate!!))
         state = state.copy(endTime = convertStringToTimePickerState(shift.shiftEndTime!!))
         state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
+        state = state.copy(profileImageRef = shift.healthAideName.profileImageRef)
+        state = state.copy(phoneNumber = shift.healthAideName.phoneNumber!!)
 
         initialState = state
-
-        Log.d("Shift Details", "This is the state manager $state")
-        Log.d("Shift Details", "This is the copy $initialState")
 
     }
 
@@ -173,6 +172,8 @@ class UpdateShiftViewModel(
 
     fun confirmSelectedCarer() {
         state = state.copy(healthAideName = state.selectedCarer?.getFullName()!!)
+        state = state.copy(profileImageRef = state.selectedCarer?.profileImageRef)
+        state = state.copy(phoneNumber = state.selectedCarer?.phoneNumber!!)
         onStateChange()
     }
 
@@ -248,7 +249,8 @@ data class UpdateShiftState @OptIn(ExperimentalMaterial3Api::class) constructor(
     val carers: List<User>? = null,
     val selectedCarer: User? = null,
     val healthAideName: String = "", // current assigned carer
-    val notes: String = "",
+    val phoneNumber: String = "",
+    val profileImageRef: Int? = null,
     val isDropDownMenuExpanded: Boolean = false,
     val showDropDownMenu: Boolean = false,
     val originalShift: Shift? = null,

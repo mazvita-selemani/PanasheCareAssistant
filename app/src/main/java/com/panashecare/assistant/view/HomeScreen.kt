@@ -148,7 +148,8 @@ fun Home(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ProfileCircular(
-                navigateToProfile = { navigateToProfile() }
+                navigateToProfile = { navigateToProfile() },
+                profileResourceId = user.profileImageRef
             )
 
             // Text in the center
@@ -244,7 +245,7 @@ fun Home(
                 ShiftCard(
                     modifier = Modifier,
                     shift = it,
-                    userProfilePicture = painterResource(it.healthAideName?.profileImageRef ?: R.drawable.person_profile),
+                    user = user,
                     navigateToSingleShiftView = { navigateToSingleViewForFutureShift(it)  }
                 )
             } ?: NoShiftsMessage("No future shifts found.")
@@ -275,7 +276,7 @@ fun Home(
                 ShiftCard(
                     modifier = Modifier,
                     shift = it,
-                    userProfilePicture = painterResource(it.healthAideName?.profileImageRef ?: R.drawable.person_profile),
+                    user = user,
                     navigateToSingleShiftView = { navigateToSingleViewForPastShift(it)  }
                 )
             } ?: NoShiftsMessage()
