@@ -154,7 +154,7 @@ fun Home(
             // Text in the center
             Text(
                 text = if(AccessControl.isAuthorized(user, Permission.ViewAllShifts)) {
-                    if (user.userType == UserType.ADMIN) "${user.patientFirstName}’s Upcoming shifts" else "${user.firstName}’s Upcoming shifts"
+                    if (user.userType == UserType.ADMIN) "${user.patientFirstName}’s Upcoming Visits" else "${user.firstName}’s Upcoming shifts"
                 } else {
                     "Upcoming shifts"
                 },
@@ -245,7 +245,7 @@ fun Home(
                     modifier = Modifier, state.futureShift!!,
                     navigateToSingleShiftView = { navigateToSingleViewForFutureShift(state.futureShift)  }
                 )
-            } ?: NoShiftsMessage()
+            } ?: NoShiftsMessage("No future shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
         }
 
