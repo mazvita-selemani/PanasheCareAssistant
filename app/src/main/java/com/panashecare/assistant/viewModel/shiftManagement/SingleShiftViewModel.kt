@@ -56,6 +56,7 @@ class SingleShiftViewModel(
         state = state.copy(startTime = shift.shiftTime!!)
         state = state.copy(endDate = shift.shiftEndDate!!)
         state = state.copy(endTime = shift.shiftEndTime!!)
+        state = state.copy(profileImageRef = shift.healthAideName?.profileImageRef)
 
         state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
 
@@ -88,5 +89,6 @@ data class SingleShiftState(
     val healthAideName: String = "",
     val patientName: String = "",
     val shiftCountdown: String = "",
+    val profileImageRef: Int? = null,
     val user: User? = null
 )

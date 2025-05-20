@@ -2,8 +2,12 @@ package com.panashecare.assistant.model.objects
 
 import com.panashecare.assistant.access.UserType
 
+enum class Gender {FEMALE, MALE, OTHER}
+
 data class User(
-    var id: String? = null,
+    val id: String? = null,
+    val gender: Gender? = null,
+    val profileImageRef: Int? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val phoneNumber: String? = null,
@@ -15,11 +19,13 @@ data class User(
     fun toJson(): Map<String, Any?> {
         return mapOf(
             "id" to id,
+            "gender" to gender,
+            "profileImageRef" to profileImageRef,
             "firstName" to firstName,
             "lastName" to lastName,
             "phoneNumber" to phoneNumber,
             "email" to email,
-            "isAdmin" to userType?.name,
+            "userType" to userType?.name,
             "patientFirstName" to patientFirstName,
             "patientLastName" to patientLastName
         )

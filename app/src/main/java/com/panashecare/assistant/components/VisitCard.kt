@@ -24,17 +24,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.panashecare.assistant.R
+import com.panashecare.assistant.access.AccessControl
+import com.panashecare.assistant.access.Permission
 import com.panashecare.assistant.model.objects.Shift
+import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
 
 @Composable
-fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: Painter? = null, navigateToSingleShiftView: () -> Unit){
+fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateToSingleShiftView: () -> Unit){
 
     Box(
         modifier = modifier
@@ -92,23 +97,28 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, userProfilePicture: P
                     )
 
             ) {
-                if (userProfilePicture != null) {
-                    Image(
-                        userProfilePicture,
-                        contentDescription = null,
-                        modifier = modifier
-                            .align(Alignment.Center)
-                            .padding(2.dp)
-                    )
-                }
+                AccessControl.WithPermission(
+                    user = user,
+                    permission = Permission.UpdateShifts,
+                    onAuthorized = {
+                        Image(
+                            painter = painterResource(shift.healthAideName?.profileImageRef ?: R.drawable.person_profile),
+                            contentDescription = null,
+                            modifier = modifier
+                                .align(Alignment.Center)
+                                .padding(2.dp)
+                        )
+                    },
+                    onDenied = {
+                        Image(
+                            painter = painterResource(shift.adminName?.profileImageRef ?: R.drawable.person_profile),
+                            contentDescription = null,
+                            modifier = modifier
+                                .align(Alignment.Center)
+                                .padding(2.dp)
+                        )
+                    })
 
-                if( userProfilePicture == null) {
-                    Text(
-                        text = "Could not load the image",
-                        modifier = modifier.align(Alignment.Center),
-                        textAlign = TextAlign.Center
-                    )
-                }
             }
 
             //name and start shift details

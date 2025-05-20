@@ -180,44 +180,6 @@ fun LogVitals(
 
         }
 
-        CustomSpacer(25)
-
-        // Notes section
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-                .background(color = appColors.surface, shape = RoundedCornerShape(size = 20.dp))
-                .padding(10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Notes",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight(500),
-                    color = appColors.formTextPrimary,
-                )
-            )
-
-            CustomSpacer(5)
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("(Optional)") },
-                modifier = modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = appColors.formTextPrimary,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-        }
-
         CustomSpacer(60)
 
 
@@ -247,7 +209,7 @@ fun LogVitals(
 
 
 @Preview
-@Composable
+@Composable 
 fun PreviewLogVitals() {
     LogVitalsScreen(
         modifier = Modifier,

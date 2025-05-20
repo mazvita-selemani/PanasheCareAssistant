@@ -1,6 +1,13 @@
 package com.panashecare.assistant.view.authentication
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.components.FormField
+import com.panashecare.assistant.model.objects.Gender
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.viewModel.authentication.AuthState
@@ -72,10 +85,15 @@ fun RegisterScreen(
         onAdminChecked = viewModel::onAdminCheckedChange,
         onPasswordChange = viewModel::onPasswordChange,
         onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        saveUser = { viewModel.registerNewUser(user) }
+        saveUser = { if(viewModel.validateFields()) viewModel.registerNewUser(user) },
+        isDropDownMenuExpanded = viewModel.state.isDropDownMenuExpanded,
+        updateIsDropDownExpanded = viewModel::updateIsDropDownExpanded,
+        selectedGender = viewModel.state.selectedGender,
+        onSelectGenderChange = viewModel::onSelectGenderChange
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Register(
     modifier: Modifier = Modifier,
@@ -83,6 +101,10 @@ fun Register(
     onAuthenticated: () -> Unit,
     state: RegisterUiState,
     saveUser: () -> Unit,
+    isDropDownMenuExpanded: Boolean,
+    updateIsDropDownExpanded: (Boolean) -> Unit,
+    selectedGender: String,
+    onSelectGenderChange: (Gender) -> Unit,
     onFirstNameChange: (String) -> Unit,
     onLastNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
@@ -95,7 +117,9 @@ fun Register(
 ) {
 
     val authState = authViewModel.authState.observeAsState()
+    val genders = listOf(Gender.MALE, Gender.FEMALE, Gender.OTHER)
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -173,6 +197,48 @@ fun Register(
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            ExposedDropdownMenuBox(
+                expanded = isDropDownMenuExpanded,
+                onExpandedChange = { updateIsDropDownExpanded(isDropDownMenuExpanded) }
+            ) {
+                FormField(
+                    value = selectedGender,
+                    onChange = { },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropDownMenuExpanded) },
+                    modifier = Modifier.menuAnchor(),
+                    error = state.errors["selectedCarer"],
+                    label = "",
+                    placeholder = ""
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isDropDownMenuExpanded,
+                    onDismissRequest = { updateIsDropDownExpanded(isDropDownMenuExpanded) },
+                    scrollState = rememberScrollState()
+                ) {
+
+                    genders.forEachIndexed { _, gender ->
+                        DropdownMenuItem(
+                            text = { Text(text = gender.name) },
+                            onClick = {
+                                onSelectGenderChange(gender)
+                                updateIsDropDownExpanded(isDropDownMenuExpanded)
+                            }
+                        )
+                    }
+                }
+            }
+
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         Row(
             modifier = modifier
                 .align(Alignment.End)
@@ -194,7 +260,17 @@ fun Register(
             )
         }
 
-        if (state.isAdmin) {
+        AnimatedVisibility(
+            visible = state.isAdmin,
+            enter = slideInVertically {
+                with(density) { -40.dp.roundToPx() }
+            } + expandVertically(
+                expandFrom = Alignment.Top
+            ) + fadeIn(
+                initialAlpha = 0.3f
+            ),
+            exit = slideOutVertically() + shrinkVertically() + fadeOut()
+        ) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -218,6 +294,7 @@ fun Register(
                 error = state.errors["patientLastName"]
             )
         }
+
 
         Spacer(modifier = Modifier.height(10.dp))
 
