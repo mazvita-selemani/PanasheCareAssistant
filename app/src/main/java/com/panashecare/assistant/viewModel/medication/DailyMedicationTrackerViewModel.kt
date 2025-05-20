@@ -123,10 +123,6 @@ class DailyMedicationTrackerViewModel(
                 val afternoonLogs = logs?.afternoonIntake
                 val eveningLogs = logs?.eveningIntake
 
-                Log.d("Panashe Logs", "morning logs: $morningLogs")
-                Log.d("Panashe Logs", "afternoon logs: $afternoonLogs")
-                Log.d("Panashe Logs", "evening logs: $eveningLogs")
-
                 state = state.copy(
                     isMorningFirstChecked = morningLogs?.getOrNull(0)?.wasTaken ?: false,
                     isMorningSecondChecked = morningLogs?.getOrNull(1)?.wasTaken ?: false,
