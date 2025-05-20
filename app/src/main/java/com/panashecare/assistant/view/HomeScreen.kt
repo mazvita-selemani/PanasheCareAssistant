@@ -231,7 +231,7 @@ fun Home(
                 style = TextStyle(
                     fontSize = 16.sp,
                     fontWeight = FontWeight(400),
-                    color = Color(0xFFC911CF),
+                    color = appColors.primaryDark,
                     textAlign = TextAlign.Start,
                 )
             )}
@@ -242,8 +242,10 @@ fun Home(
             is ShiftResult.Loading -> NoShiftsMessage("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
                 ShiftCard(
-                    modifier = Modifier, state.futureShift!!,
-                    navigateToSingleShiftView = { navigateToSingleViewForFutureShift(state.futureShift)  }
+                    modifier = Modifier,
+                    shift = it,
+                    userProfilePicture = painterResource(it.healthAideName?.profileImageRef ?: R.drawable.person_profile),
+                    navigateToSingleShiftView = { navigateToSingleViewForFutureShift(it)  }
                 )
             } ?: NoShiftsMessage("No future shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
@@ -259,7 +261,7 @@ fun Home(
                 style = TextStyle(
                     fontSize = 16.sp,
                     fontWeight = FontWeight(400),
-                    color = Color(0xFFC911CF),
+                    color = appColors.primaryDark,
                     textAlign = TextAlign.Start,
                 )
             )
@@ -271,8 +273,10 @@ fun Home(
             is ShiftResult.Loading -> NoShiftsMessage("Loading...")
             is ShiftResult.Success -> stateN.shift?.let {
                 ShiftCard(
-                    modifier = Modifier, state.pastShift!!,
-                    navigateToSingleShiftView = { navigateToSingleViewForPastShift(state.pastShift)  }
+                    modifier = Modifier,
+                    shift = it,
+                    userProfilePicture = painterResource(it.healthAideName?.profileImageRef ?: R.drawable.person_profile),
+                    navigateToSingleShiftView = { navigateToSingleViewForPastShift(it)  }
                 )
             } ?: NoShiftsMessage()
             is ShiftResult.Error -> Text("Error: ${stateN.message}")

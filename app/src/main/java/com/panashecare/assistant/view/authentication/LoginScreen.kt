@@ -58,9 +58,6 @@ fun LoginScreen(
 
     LaunchedEffect(authState.value) {
 
-      //  val token = Firebase.messaging.token.await()
-      //  Log.d("FCM token:", token)
-
         when(authState.value){
             is AuthState.Authenticated -> {
                 // temporary workaround for user object passing

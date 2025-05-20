@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.panashecare.assistant.model.objects.Gender
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.UserRepository
 import kotlinx.coroutines.launch
@@ -53,6 +54,14 @@ class RegisterViewModel(
         state = state.copy(phoneNumber = newValue)
     }
 
+    fun updateIsDropDownExpanded(newValue: Boolean) {
+        state = state.copy(isDropDownMenuExpanded = !newValue)
+    }
+
+    fun onSelectGenderChange(newValue: Gender) {
+        state = state.copy(selectedGender = newValue.name)
+    }
+
     fun registerNewUser(user: User) {
 
         // if information is not valid user will not be registered
@@ -74,7 +83,7 @@ class RegisterViewModel(
         }
     }
 
-    private fun validateFields(): Boolean {
+    fun validateFields(): Boolean {
         val errors = mutableMapOf<String, String>()
 
         if (state.firstName.isBlank() || !state.firstName[0].isUpperCase()) {
@@ -145,6 +154,8 @@ data class RegisterUiState(
     val patientLastName: String = "",
     val phoneNumber: String = "",
     val isAdmin: Boolean = false,
+    val isDropDownMenuExpanded: Boolean = false,
+    val selectedGender: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val errors: Map<String, String> = emptyMap()

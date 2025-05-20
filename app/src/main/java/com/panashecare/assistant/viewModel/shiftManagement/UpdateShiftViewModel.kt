@@ -182,12 +182,6 @@ class UpdateShiftViewModel(
     }
 
 
-    fun updateNotes(newNotes: String) {
-        state = state.copy(notes = newNotes)
-        onStateChange()
-    }
-
-
     fun showStartDatePicker(show: Boolean) {
         state = state.copy(showStartDatePicker = show)
     }
