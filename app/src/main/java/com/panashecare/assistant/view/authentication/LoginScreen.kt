@@ -52,6 +52,7 @@ fun LoginScreen(
     authViewModel: AuthViewModel,
     userSessionViewModel: UserSessionViewModel,
     onNavigateToRegister: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
     onAuthenticated: () -> Unit
 ) {
     val viewModel = viewModel<LoginViewModel>(factory = LoginViewModelFactory(repository, prescriptionRepository))
@@ -153,7 +154,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         Button(
-            onClick = {},
+            onClick = onNavigateToRegister,
             modifier = buttonModifier,
             colors = ButtonColors(
                 containerColor = Color.Black,
@@ -162,12 +163,12 @@ fun LoginScreen(
                 disabledContentColor = Color.Black
             )
         ) {
-            Text(text = "Sign In with Google")
+            Text(text = "Register")
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        TextButton(onClick = onNavigateToRegister) { Text("Don't have an account? Sign up") }
+        TextButton(onClick = onNavigateToForgotPassword) { Text("Forgot password?") }
     }
 }
 

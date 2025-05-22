@@ -21,6 +21,7 @@ import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
 import com.panashecare.assistant.view.HomeScreen
 import com.panashecare.assistant.view.ProfileDetailsScreen
+import com.panashecare.assistant.view.authentication.ForgotPasswordScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
 import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
@@ -41,6 +42,9 @@ object Login
 
 @Serializable
 object Register
+
+@Serializable
+object ForgotPassword
 
 @Serializable
 data class Home(val user: String? = null)
@@ -100,7 +104,8 @@ fun AppNavigation(
                 onNavigateToRegister = { navController.navigate(Register) },
                 repository = userRepository,
                 prescriptionRepository = prescriptionRepository,
-                userSessionViewModel = userSessionViewModel
+                userSessionViewModel = userSessionViewModel,
+                onNavigateToForgotPassword = { navController.navigate(ForgotPassword) }
             )
         }
 
@@ -109,6 +114,12 @@ fun AppNavigation(
                 authViewModel = authViewModel,
                 onAuthenticated = { navController.navigate(Login) },
                 repository = userRepository
+            )
+        }
+
+        composable<ForgotPassword> {
+            ForgotPasswordScreen(
+                onBackToLogin = { navController.navigate(Login) }
             )
         }
 
