@@ -67,8 +67,8 @@ class ShiftRepository(
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val allShifts = snapshot.children.mapNotNull { it.getValue(Shift::class.java) }
-                val filteredShifts = allShifts.filter { shiftPeriodHelper.calculateShiftPeriod(it) == period }
-                Log.d("HomeScreen in getShiftsFlow", "User: $user")
+                val validShifts = allShifts.filter { it.shiftStatus != ShiftStatus.CANCELLED }
+                val filteredShifts = validShifts.filter { shiftPeriodHelper.calculateShiftPeriod(it) == period }
                 val finalShifts = if (user?.userType == UserType.CARER && user.id != null) {
                     filteredShifts.filter { it.healthAideName?.id == user.id }
                 } else {
