@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,15 +30,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
 import com.panashecare.assistant.access.AccessControl
 import com.panashecare.assistant.access.Permission
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.model.objects.Shift
+import com.panashecare.assistant.model.objects.ShiftPeriod
+import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.ui.theme.PanasheCareAssistantTheme
+import com.panashecare.assistant.utils.ShiftPeriodHelper
+import java.util.Date
 
 @Composable
-fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateToSingleShiftView: () -> Unit){
+fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateToSingleShiftView: () -> Unit, isCarerViewingList: Boolean = false, updateShiftStatus: () -> Unit){
+
+    val appColors = AppColors()
 
     Box(
         modifier = modifier
@@ -126,7 +133,7 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateT
 
                 Text(
                     modifier= modifier.padding(8.dp),
-                    text = "${shift.healthAideName?.getFullName()}",
+                    text = if(user.userType == UserType.ADMIN) "${shift.healthAideName?.getFullName()}" else "${shift.adminName?.getPatientFullName()}",
                     style = TextStyle(
                         fontSize = 25.sp,
                         fontWeight = FontWeight(600),
@@ -151,20 +158,20 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateT
                         ) {
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text(
-                                    text = shift.shiftDate!!,
+                                    text = shift.shiftDate ?: "No date specified",
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight(300),
-                                        color = Color(0xFFC911CF),
+                                        color = appColors.primaryDark,
                                         textAlign = TextAlign.Center,
                                     )
                                 )
                                 Text(
-                                    text = shift.shiftTime!!,
+                                    text = shift.shiftTime ?: "No time specified",
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight(300),
-                                        color = Color(0xFFC911CF),
+                                        color = appColors.primaryDark,
                                     )
                                 )
                             }
@@ -181,23 +188,51 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateT
                 .fillMaxSize()
                 .padding(horizontal = 25.dp)
         ) {
-            Button(
-                onClick = { navigateToSingleShiftView() },
+            Row(
                 modifier = modifier
-                    .align(Alignment.BottomEnd)
-                    .border(3.dp, Color(0xFFF8E7FA), RoundedCornerShape(12.dp))
-                    .background(Color.White, RoundedCornerShape(12.dp))
-                    .width(105.dp)
-                    .height(45.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color(0xFFC911CF)
-                ),
-                contentPadding = PaddingValues(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
+                    .align(Alignment.BottomEnd),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(text = "View")
+                if (isCarerViewingList && ShiftPeriodHelper().calculateShiftPeriod(shift) == ShiftPeriod.FUTURE) {
+                    Button(
+                        onClick = { updateShiftStatus() },
+                        modifier = Modifier
+                            .border(3.dp, appColors.primarySuperLight, RoundedCornerShape(12.dp))
+                            .background(
+                                color = if(shift.shiftStatus == ShiftStatus.REQUESTED) appColors.primaryDark else Color.Gray,
+                                shape = RoundedCornerShape(12.dp))
+                            .width(105.dp)
+                            .height(45.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.White
+                        ),
+                        contentPadding = PaddingValues(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
+                    ) {
+                        Text(
+                            text = if(shift.shiftStatus == ShiftStatus.REQUESTED) "Confirm" else "Confirmed"
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = { navigateToSingleShiftView() },
+                    modifier = Modifier
+                        .border(3.dp, appColors.primarySuperLight, RoundedCornerShape(12.dp))
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .width(105.dp)
+                        .height(45.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = appColors.primaryDark
+                    ),
+                    contentPadding = PaddingValues(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
+                ) {
+                    Text(text = "View")
+                }
             }
         }
+
 
     }
 
@@ -208,6 +243,17 @@ fun ShiftCard(modifier: Modifier = Modifier, shift: Shift, user: User, navigateT
 @Composable
 fun PreviewshiftCard(){
     PanasheCareAssistantTheme {
-   //     shiftCard(isAdmin = false)
+        ShiftCard(
+            modifier = Modifier,
+            shift = Shift(
+                adminName = User(patientFirstName = "Joanne", patientLastName = "Dodo", profileImageRef = R.drawable.person_profile),
+                healthAideName = User(firstName = "John", lastName = "Doe", profileImageRef = R.drawable.person_profile),
+                shiftDuration = "4h",
+                shiftStatus =  ShiftStatus.REQUESTED),
+            user = User(firstName = "John", lastName = "Doe", profileImageRef = R.drawable.person_profile),
+            navigateToSingleShiftView = { },
+            updateShiftStatus = {  },
+            isCarerViewingList = true
+        )
     }
 }

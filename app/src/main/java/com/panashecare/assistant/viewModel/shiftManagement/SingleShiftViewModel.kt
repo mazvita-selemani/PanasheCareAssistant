@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.panashecare.assistant.model.objects.Shift
+import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
@@ -51,12 +52,22 @@ class SingleShiftViewModel(
         }
     }
 
+    fun cancelShift(shiftId: String){
+        shiftRepository.cancelShift(shiftId){ onComplete ->
+            if (onComplete) {
+                state = state.copy(shiftStatus = ShiftStatus.CANCELLED)
+            }
+            Log.d("PCA Logs", "Shift cancelled successfully: $onComplete")
+        }
+    }
+
     private fun loadShiftDetails(shift: Shift){
         state = state.copy(startDate = shift.shiftDate!!)
         state = state.copy(startTime = shift.shiftTime!!)
         state = state.copy(endDate = shift.shiftEndDate!!)
         state = state.copy(endTime = shift.shiftEndTime!!)
         state = state.copy(profileImageRef = shift.healthAideName?.profileImageRef)
+        state = state.copy(shiftStatus = shift.shiftStatus!!)
 
         state = state.copy(healthAideName = shift.healthAideName?.getFullName()!!)
 
@@ -88,6 +99,7 @@ data class SingleShiftState(
     val endTime: String = "",
     val healthAideName: String = "",
     val patientName: String = "",
+    val shiftStatus: ShiftStatus = ShiftStatus.REQUESTED,
     val shiftCountdown: String = "",
     val profileImageRef: Int? = null,
     val user: User? = null

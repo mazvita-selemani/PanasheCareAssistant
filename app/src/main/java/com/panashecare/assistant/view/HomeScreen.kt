@@ -246,7 +246,9 @@ fun Home(
                     modifier = Modifier,
                     shift = it,
                     user = user,
-                    navigateToSingleShiftView = { navigateToSingleViewForFutureShift(it)  }
+                    navigateToSingleShiftView = { navigateToSingleViewForFutureShift(it) },
+                    isCarerViewingList = false,
+                    updateShiftStatus = { /* Shift status is not updated in home page*/ }
                 )
             } ?: NoShiftsMessage("No future shifts found.")
             is ShiftResult.Error -> Text("Error: ${stateN.message}")
@@ -277,7 +279,9 @@ fun Home(
                     modifier = Modifier,
                     shift = it,
                     user = user,
-                    navigateToSingleShiftView = { navigateToSingleViewForPastShift(it)  }
+                    navigateToSingleShiftView = { navigateToSingleViewForPastShift(it)  },
+                    isCarerViewingList = false,
+                    updateShiftStatus = { /* Shift status is not updated in home page*/ }
                 )
             } ?: NoShiftsMessage()
             is ShiftResult.Error -> Text("Error: ${stateN.message}")

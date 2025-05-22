@@ -34,4 +34,11 @@ data class User(
     fun getFullName(): String{
         return "${this.firstName} ${this.lastName}"
     }
+
+    fun getPatientFullName(): String{
+        if(this.patientFirstName != null && this.patientLastName != null) {
+            return "${this.patientFirstName} ${this.patientLastName}"
+        }
+        return "Your Patient"
+    }
 }

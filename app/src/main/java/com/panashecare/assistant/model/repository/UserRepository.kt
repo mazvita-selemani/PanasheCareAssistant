@@ -98,6 +98,25 @@ class UserRepository(
         }
     }
 
+    fun getCustomUserIdByEmail(email: String, onResult: (String?) -> Unit) {
+        database.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val customId = snapshot.children.first().key
+                        onResult(customId)
+                    } else {
+                        onResult(null)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onResult(null)
+                }
+            })
+    }
+
+
     fun getUserById(id: String, callback: (User?) -> Unit) {
         database.get().addOnSuccessListener { snapshot ->
             val matchedUser = snapshot.children.mapNotNull { it.getValue(User::class.java) }

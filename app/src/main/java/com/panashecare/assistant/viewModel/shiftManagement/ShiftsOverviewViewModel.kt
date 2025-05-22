@@ -1,5 +1,6 @@
 package com.panashecare.assistant.viewModel.shiftManagement
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -86,6 +87,14 @@ class ShiftsOverviewViewModel(
 
     fun onSelectedShiftFocus(shift: Shift){
         state = state.copy(selectedShift = shift)
+    }
+
+    fun updateShiftStatus(){
+        viewModelScope.launch {
+            shiftRepository.updateShiftStatus(state.selectedShift?.id!!){ success ->
+                 Log.d("ShiftsOverviewViewModel", "Shift status updated successfully: $success")
+            }
+        }
     }
 
     fun onUpcomingShiftsChange(newValue: Boolean){
