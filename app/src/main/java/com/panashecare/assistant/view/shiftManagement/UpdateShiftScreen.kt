@@ -47,8 +47,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.components.HeaderButtonPair
+import com.panashecare.assistant.components.HeaderSingle
+import com.panashecare.assistant.components.HelpIconWithDialog
 import com.panashecare.assistant.components.ProfileCircular
 import com.panashecare.assistant.components.ShiftTimePicker
+import com.panashecare.assistant.components.SystemButton
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.ShiftRepository
 import com.panashecare.assistant.model.repository.UserRepository
@@ -176,9 +179,19 @@ fun UpdateShift(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        HeaderButtonPair("Update Shift", "Confirm", { navigateToSingleShiftView() })
 
-        CustomSpacer(10)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderSingle("Update Shift Details")
+
+            HelpIconWithDialog(helpMessage = "You can change the time, date, or assigned carer for an existing shift. If you change your mind, feel free to come back anytime to make further changes.\n \n" +
+                    "Or, if you no longer need this shift, simply go back to the previous screen to cancel it. When you're finished just tap 'Save Changes' to confirm  the new details of the shift.")
+        }
+
+        CustomSpacer(15)
 
         ShiftTimePicker(
             state = state,
@@ -193,7 +206,7 @@ fun UpdateShift(
             updateChecked = updateChecked
         )
 
-        CustomSpacer(10)
+        CustomSpacer(30)
 
         // profile card
         AnimatedVisibility(
@@ -352,7 +365,7 @@ fun UpdateShift(
 
                     Button(
                         onClick = {
-                            confirmCarerSelection()
+                            if(state.selectedCarer != null) confirmCarerSelection()
                             updateShowDropDownMenu(showDropDownMenu)
                         },
                         modifier = Modifier
@@ -373,6 +386,20 @@ fun UpdateShift(
 
                 }
             }
+        }
+
+        CustomSpacer(30)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SystemButton(
+                buttonText = "Save Changes",
+                onNavigationClick = {
+                    navigateToSingleShiftView()
+                }
+            )
         }
 
     }
