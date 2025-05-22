@@ -65,7 +65,7 @@ fun HelpIconWithDialog(
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = {
-                Text(text = "Help")
+                Text(text = "Tip")
             },
             text = {
                 Text(text = helpMessage)
