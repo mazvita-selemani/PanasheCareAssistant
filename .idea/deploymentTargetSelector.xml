@@ -26,10 +26,10 @@
           </targets>
         </DialogSelection>
       </SelectionState>
-      <SelectionState runConfigName="PreviewCreateNewShift">
+      <SelectionState runConfigName="PreviewUpdateShift">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PreviewUpdateShift">
+      <SelectionState runConfigName="PreviewTracker">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

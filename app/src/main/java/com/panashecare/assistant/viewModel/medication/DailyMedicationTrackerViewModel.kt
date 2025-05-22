@@ -55,9 +55,7 @@ class DailyMedicationTrackerViewModel(
         MutableStateFlow<PrescriptionResult>(PrescriptionResult.Loading)
     private val helper = TimeSerialisationHelper()
 
-    private val medication = MutableStateFlow<Medication?>(null)
     private val medicationMap = mutableStateOf<Map<String, Medication>>(emptyMap())
-    private var medicationList = MutableStateFlow<MedicationResult>(MedicationResult.Loading)
 
     init {
         // set current time of day state

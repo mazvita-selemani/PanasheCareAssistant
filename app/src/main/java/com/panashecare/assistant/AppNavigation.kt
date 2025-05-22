@@ -279,7 +279,8 @@ fun AppNavigation(
                     prescriptionRepository = prescriptionRepository,
                     dailyMedicationLogRepository = dailyMedicationLogRepository,
                     navigateToStockManagement = { navController.navigate(StockManagement(userId = userId)) },
-                    userRepository = userRepository
+                    userRepository = userRepository,
+                    navigateToCreatePrescriptionScheduleScreen = { navController.navigate(SchedulePrescriptions(userId = userId)) }
                 )
             }
         }

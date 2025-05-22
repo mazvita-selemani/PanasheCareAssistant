@@ -21,10 +21,18 @@ class PrescriptionRepository(
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val prescription =
-                    snapshot.children.firstNotNullOf { it.getValue(Prescription::class.java) }
+                try {
+                    val prescription = snapshot.children
+                        .firstNotNullOfOrNull { it.getValue(Prescription::class.java) }
 
-                    trySend(PrescriptionResult.Success(prescription))
+                    if (prescription != null) {
+                        trySend(PrescriptionResult.Success(prescription))
+                    } else {
+                        trySend(PrescriptionResult.Error("No prescriptions found."))
+                    }
+                } catch (e: Exception) {
+                    trySend(PrescriptionResult.Error("Error parsing prescriptions: ${e.localizedMessage}"))
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
