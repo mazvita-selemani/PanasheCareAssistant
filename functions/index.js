@@ -21,6 +21,57 @@ exports.notifyNewShift = functions.database
     },
     );
 
+exports.notifyNewShiftAssignment = functions.database
+    .onValueUpdated(
+        {
+          ref: "/shifts/{shiftId}",
+          region: "europe-west1",
+        },
+        (event) => {
+          const before = event && event.data && event.data.before;
+          const after = event && event.data && event.data.after;
+
+          const beforeJson = before._data;
+          const afterJson = after._data;
+          const beforeCarer = beforeJson.healthAideName;
+          const afterCarer = afterJson.healthAideName;
+          const oldCarerId = beforeCarer.id;
+          const newCarerId = afterCarer.id;
+
+          // If the assigned carer has changed
+          if (oldCarerId && newCarerId && oldCarerId !== newCarerId) {
+            const messages = [];
+
+            // Notify new carer
+            messages.push(
+                admin.messaging().send({
+                  notification: {
+                    title: "New Shift Assigned",
+                    body: `${afterCarer.fullName}, you have been assigned a new shift on ${afterJson.shiftDate}.`,
+                  },
+                  topic: `${newCarerId}`,
+                }),
+            );
+
+            // Notify removed carer
+            messages.push(
+                admin.messaging().send({
+                  notification: {
+                    title: "Shift Removed",
+                    body: `${beforeCarer.fullName} unfortunately you've been removed from your shift on ${beforeJson.shiftDate}.`,
+                  },
+                  topic: `${oldCarerId}`,
+                }),
+            );
+
+            return Promise.all(messages);
+          }
+
+          return null;
+        },
+    );
+
+
 exports.notifyNewVitalsLog = functions.database
     .onValueCreated({
       ref: "/vitals/{vitalsId}",

@@ -68,6 +68,8 @@ class LoginViewModel(private val repository: UserRepository, private val prescri
     fun getUserAfterLogin(email: String, onUserFound: (User?) -> Unit) {
         repository.getUserByEmail(email, onUserFound)
     }
+
+
 }
 
 class LoginViewModelFactory(private val repository: UserRepository, private val prescriptionRepository: PrescriptionRepository): ViewModelProvider.Factory{

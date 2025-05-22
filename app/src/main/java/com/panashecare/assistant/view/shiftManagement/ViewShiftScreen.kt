@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -53,6 +55,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.panashecare.assistant.access.AccessControl
 import com.panashecare.assistant.access.Permission
+import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.UserRepository
 import kotlinx.coroutines.delay
@@ -72,13 +75,15 @@ fun ViewShiftScreen(modifier: Modifier, shiftId: String, shiftRepository: ShiftR
         state = viewModel.state,
         userProfilePicture = viewModel.state.profileImageRef,
         navigateToEditShift = { navigateToEditShift(shiftId) },
-        user = viewModel.state.user ?: User(firstName = "Loading...")
+        user = viewModel.state.user ?: User(firstName = "Loading..."),
+        cancelShift = { viewModel.cancelShift(shiftId) }
     )
 }
 
 @Composable
 fun ViewShift(
     modifier: Modifier = Modifier,
+    cancelShift: () -> Unit,
     userProfilePicture: Int? = null,
     state: SingleShiftState,
     user: User,
@@ -157,7 +162,7 @@ fun ViewShift(
                 )
             )
 
-            ShiftCountdown(state.startDate, state.startTime, appColors)
+            ShiftCountdown(state.startDate, state.startTime, state.shiftStatus,appColors)
 
             AccessControl.WithPermission(
                 user = user,
@@ -182,24 +187,7 @@ fun ViewShift(
                         Text("Edit", fontSize = 16.sp, fontWeight = FontWeight(400))
                     }
 
-                    Button(
-                        onClick = { },
-                        modifier = Modifier
-                            .width(135.dp)
-                            .height(45.dp)
-                            .border(
-                                1.dp,
-                                color = appColors.primaryDark,
-                                shape = RoundedCornerShape(size = 47.dp)
-                            ),
-                        shape = RoundedCornerShape(size = 47.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = appColors.primaryDark,
-                            containerColor = Color.White
-                        )
-                    ) {
-                        Text("Cancel", fontSize = 16.sp, fontWeight = FontWeight(400))
-                    }
+                    CancelShiftButton(cancelShift, appColors)
 
                 }
                 },
@@ -230,6 +218,60 @@ fun ViewShift(
 
     }
 }
+
+@Composable
+private fun CancelShiftButton(cancelShift: () -> Unit, appColors: AppColors) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Box {
+        // Cancel Button
+        Button(
+            onClick = { showDialog = true },
+            modifier = Modifier
+                .width(135.dp)
+                .height(45.dp)
+                .border(
+                    1.dp,
+                    color = appColors.primaryDark,
+                    shape = RoundedCornerShape(size = 47.dp)
+                ),
+            shape = RoundedCornerShape(size = 47.dp),
+            colors = ButtonDefaults.buttonColors(
+                contentColor = appColors.primaryDark,
+                containerColor = Color.White
+            )
+        ) {
+            Text("Cancel", fontSize = 16.sp, fontWeight = FontWeight(400))
+        }
+
+        // Confirmation Dialog
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Cancel Shift") },
+                text = {
+                    Text("Are you sure you want to cancel this shift? Once you tap Confirm, this cannot be undone.")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog = false
+                            cancelShift()
+                        }
+                    ) {
+                        Text("Confirm", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Dismiss")
+                    }
+                }
+            )
+        }
+    }
+}
+
 
 
 @Composable
@@ -325,14 +367,14 @@ private fun ReadOnlyTimeShiftPicker(state: SingleShiftState){
 }
 
 @Composable
-fun ShiftCountdown(startDate: String, startTime: String, appColors: AppColors) {
+fun ShiftCountdown(startDate: String, startTime: String, shiftStatus: ShiftStatus,appColors: AppColors) {
     Log.d("ShiftCountdown", "ShiftCountdown in parent function: ${startDate} ${startTime}")
 
     var countdownText by remember { mutableStateOf("") }
 
     LaunchedEffect(startDate, startTime) {
         while (true) {
-            countdownText = getShiftCountdownText(startDate, startTime)
+            countdownText = getShiftCountdownText(startDate, startTime, shiftStatus)
             delay(1000L)
         }
     }
@@ -349,7 +391,7 @@ fun ShiftCountdown(startDate: String, startTime: String, appColors: AppColors) {
 }
 
 
-private fun getShiftCountdownText(startDate: String, startTime: String): String {
+private fun getShiftCountdownText(startDate: String, startTime: String, shiftStatus: ShiftStatus): String {
 
     return try {
         val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")
@@ -358,6 +400,7 @@ private fun getShiftCountdownText(startDate: String, startTime: String): String 
         val duration = Duration.between(now, shiftDateTime)
 
         when {
+            shiftStatus == ShiftStatus.CANCELLED -> "Shift cancelled"
             duration.isNegative -> "Shift completed"
             duration.toDays() >= 1 -> "${duration.toDays()} day(s) left"
             else -> {

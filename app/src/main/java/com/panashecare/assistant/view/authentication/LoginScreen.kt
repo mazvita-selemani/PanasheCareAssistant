@@ -35,6 +35,7 @@ import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.PrescriptionRepository
 import com.panashecare.assistant.model.repository.UserRepository
+import com.panashecare.assistant.viewModel.UserSessionViewModel
 import com.panashecare.assistant.viewModel.authentication.AuthState
 import com.panashecare.assistant.viewModel.authentication.AuthViewModel
 import com.panashecare.assistant.viewModel.authentication.LoginViewModel
@@ -49,8 +50,9 @@ fun LoginScreen(
     repository: UserRepository,
     prescriptionRepository: PrescriptionRepository,
     authViewModel: AuthViewModel,
+    userSessionViewModel: UserSessionViewModel,
     onNavigateToRegister: () -> Unit,
-    onAuthenticated: (User) -> Unit
+    onAuthenticated: () -> Unit
 ) {
     val viewModel = viewModel<LoginViewModel>(factory = LoginViewModelFactory(repository, prescriptionRepository))
     val authState = authViewModel.authState.observeAsState()
@@ -58,24 +60,43 @@ fun LoginScreen(
 
     LaunchedEffect(authState.value) {
 
-        when(authState.value){
+        when (authState.value) {
             is AuthState.Authenticated -> {
-                // temporary workaround for user object passing
-                if(viewModel.state.email.isNotEmpty()) {
-                    viewModel.getUserAfterLogin(viewModel.state.email) { user ->
-                        user?.let {
-                            onAuthenticated(it)
-                            subscribeUserToShiftNotifications(it)
-                            subscribeUserToVitalLogNotifications()
-                          //  viewModel.scheduleMedicationNotifications("-OPVVDqxQGr8RPH3dxzO", context) //hardcoded prescriptionId
-                        } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+                onAuthenticated()
+                    authViewModel.currentUser?.email?.let {
+                        repository.getCustomUserIdByEmail(it) { customUserId ->
+                            Log.d("LoginScreen", "Custom User ID: $customUserId")
+                            if (customUserId != null) {
+                                // Optionally set this to your session ViewModel
+                                userSessionViewModel.setUserId(customUserId)
+
+                                // Use the custom userId to fetch the full user object
+                                viewModel.getUserAfterLogin(it) { user ->
+                                    Log.d("LoginScreen", "User: $user")
+
+                                    user?.let {
+                                        subscribeUserToShiftNotifications(user)
+                                        subscribeUserToVitalLogNotifications()
+                                        // viewModel.scheduleMedicationNotifications(prescriptionId, context)
+                                    } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "Failed to get user ID from email", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
-                }
+
             }
-            is AuthState.Error -> Toast.makeText(context,
-                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState.value as AuthState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
+
             else -> Unit
         }
+
     }
 
     val buttonModifier = modifier

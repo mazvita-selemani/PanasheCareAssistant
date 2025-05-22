@@ -14,6 +14,8 @@ module.exports = {
     "no-restricted-globals": ["error", "name", "length"],
     "prefer-arrow-callback": "error",
     "quotes": ["error", "double", {"allowTemplateLiterals": true}],
+    "linebreak-style": ["error", process.platform === "win32" ? "windows" : "unix"],
+    "max-len": 0,
   },
   overrides: [
     {

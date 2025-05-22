@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
+import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.components.SearchBar
 import com.panashecare.assistant.components.ShiftCard
 import com.panashecare.assistant.model.objects.Shift
@@ -60,6 +61,7 @@ fun ShiftsOverviewScreen(shiftRepository: ShiftRepository, userRepository: UserR
             navigateToSingleShiftView(it)
         } },
         onSelectedShiftFocus = viewModel::onSelectedShiftFocus,
+        updateShiftStatus = viewModel::updateShiftStatus
     )
 }
 
@@ -69,6 +71,7 @@ private fun ShiftsOverview(
     state: ShiftsOverviewState,
     onUpcomingChange: (Boolean) -> Unit,
     onSelectedShiftFocus: (Shift) -> Unit,
+    updateShiftStatus: () -> Unit,
     navigateToSingleShiftView: () -> Unit
 ) {
 
@@ -225,7 +228,13 @@ private fun ShiftsOverview(
                             navigateToSingleShiftView = {
                                 onSelectedShiftFocus(shiftSingle)
                                 navigateToSingleShiftView() },
+                            isCarerViewingList = state.user?.userType == UserType.CARER,
+                            updateShiftStatus = {
+                                onSelectedShiftFocus(shiftSingle)
+                                updateShiftStatus()
+                            }
                         )
+
                     }
                 }
             } else {
@@ -258,7 +267,7 @@ fun PreviewShiftsOverview() {
    ShiftsOverviewScreen(
        ShiftRepository(),
        UserRepository(),
-       "-OPpePiI_ULo4Bfx6UXD",
+       "-OQiHw4_QdryQsuIzCkE",
        modifier = Modifier,
        navigateToSingleShiftView = {}
    )

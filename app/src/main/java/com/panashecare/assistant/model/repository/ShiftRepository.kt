@@ -10,6 +10,7 @@ import com.google.firebase.database.database
 import com.panashecare.assistant.access.UserType
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.ShiftPeriod
+import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.utils.ShiftPeriodHelper
 import kotlinx.coroutines.channels.awaitClose
@@ -66,8 +67,8 @@ class ShiftRepository(
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val allShifts = snapshot.children.mapNotNull { it.getValue(Shift::class.java) }
-                val filteredShifts = allShifts.filter { shiftPeriodHelper.calculateShiftPeriod(it) == period }
-                Log.d("HomeScreen in getShiftsFlow", "User: $user")
+                val validShifts = allShifts.filter { it.shiftStatus != ShiftStatus.CANCELLED }
+                val filteredShifts = validShifts.filter { shiftPeriodHelper.calculateShiftPeriod(it) == period }
                 val finalShifts = if (user?.userType == UserType.CARER && user.id != null) {
                     filteredShifts.filter { it.healthAideName?.id == user.id }
                 } else {
@@ -125,6 +126,31 @@ class ShiftRepository(
                 }
                 onComplete(task.isSuccessful)
             }
+    }
+
+    fun updateShiftStatus(shiftId: String, onComplete: (Boolean) -> Unit) {
+        database.child(shiftId).child("shiftStatus").get().addOnSuccessListener { snapshot ->
+            val currentStatus = snapshot.getValue(ShiftStatus::class.java)
+            val newStatus = if (currentStatus == ShiftStatus.REQUESTED) ShiftStatus.CONFIRMED else ShiftStatus.REQUESTED
+
+            database.child(shiftId).child("shiftStatus").setValue(newStatus)
+                .addOnSuccessListener { onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        }.addOnFailureListener {
+            onComplete(false)
+        }
+    }
+
+
+    fun cancelShift(shiftId: String, onComplete: (Boolean) -> Unit) {
+        database.child(shiftId).child("shiftStatus").get().addOnSuccessListener {
+            database.child(shiftId).child("shiftStatus").setValue(ShiftStatus.CANCELLED)
+                .addOnSuccessListener { onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        }.addOnFailureListener {
+            onComplete(false)
+
+        }
     }
 
 
