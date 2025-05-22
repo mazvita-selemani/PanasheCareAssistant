@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -93,12 +94,13 @@ fun AppNavigation(
             LoginScreen(
                 modifier = Modifier,
                 authViewModel = authViewModel,
-                onAuthenticated = { user ->
-                    navController.navigate(Home(user = user.id!!))
+                onAuthenticated = {
+                    navController.navigate(Home(user = userSessionViewModel.userId))
                 },
                 onNavigateToRegister = { navController.navigate(Register) },
                 repository = userRepository,
-                prescriptionRepository = prescriptionRepository
+                prescriptionRepository = prescriptionRepository,
+                userSessionViewModel = userSessionViewModel
             )
         }
 
@@ -122,23 +124,36 @@ fun AppNavigation(
 
         composable<Home> { backStackEntry ->
             val home: Home = backStackEntry.toRoute()
-            val userId = if(home.user != null) home.user else userSessionViewModel.userId!!
-            if(userSessionViewModel.userId == null) userSessionViewModel.setUserId(userId) // initialise user id for session
-            HomeScreen(
-                navigateToProfile = { navController.navigate(Profile(userId = userId)) },
-                repository = shiftRepository,
-                navigateToCreateShift = { navController.navigate(CreateNewShift(userId = userId)) },
-                navigateToShiftList = { navController.navigate(ShiftList(userId = userId)) },
-                modifier = modifier,
-                userId = userId,
-                navigateToSingleViewForPastShift = { shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
-                },
-                navigateToSingleViewForFutureShift = { shift ->
-                    navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
-                },
-                userRepository = userRepository
-            )
+            val userId = home.user ?: userSessionViewModel.userId
+
+            if (userId != null) {
+                if (userSessionViewModel.userId == null) {
+                    userSessionViewModel.setUserId(userId)
+                }
+
+                // Proceed with the rest of your logic using userId
+                HomeScreen(
+                    navigateToProfile = { navController.navigate(Profile(userId = userId)) },
+                    repository = shiftRepository,
+                    navigateToCreateShift = { navController.navigate(CreateNewShift(userId = userId)) },
+                    navigateToShiftList = { navController.navigate(ShiftList(userId = userId)) },
+                    modifier = modifier,
+                    userId = userId,
+                    navigateToSingleViewForPastShift = { shift ->
+                        navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                    },
+                    navigateToSingleViewForFutureShift = { shift ->
+                        navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                    },
+                    userRepository = userRepository
+                )
+            } else {
+                // Show fallback or error (userId missing)
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Error: user ID not found")
+                }
+            }
+
         }
 
         composable<CreateNewShift> { backStackEntry ->
