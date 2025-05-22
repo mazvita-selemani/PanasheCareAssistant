@@ -30,8 +30,6 @@ class AuthViewModel: ViewModel() {
 
     fun login(email: String, password: String){
 
-        // TODO Add custom form validation later
-
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("email and password cannot be empty")
             return
@@ -53,8 +51,6 @@ class AuthViewModel: ViewModel() {
     }
 
     fun signUp(email: String, password: String){
-
-        // TODO Add custom form validation later
 
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("Email and password cannot be empty")

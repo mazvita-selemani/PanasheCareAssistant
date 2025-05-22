@@ -29,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.FormField
 import com.panashecare.assistant.components.HeaderButtonPair
+import com.panashecare.assistant.components.HeaderSingle
+import com.panashecare.assistant.components.HelpIconWithDialog
 import com.panashecare.assistant.model.objects.Vitals
 import com.panashecare.assistant.model.repository.UserRepository
 import com.panashecare.assistant.model.repository.VitalsRepository
@@ -95,7 +97,18 @@ fun LogVitals(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        HeaderButtonPair("Log Vitals", "Help?", {})
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderSingle("Log Vitals")
+
+            HelpIconWithDialog(helpMessage = "Enter the patient’s vital signs — heart rate, blood pressure, and oxygen level. " +
+                    "Don’t worry, we’ll let you know if something doesn’t look right. Once you’re done, the information " +
+                    "will be saved so you can view it later. \n To save your vitals tap 'Submit Recording'.")
+        }
 
         CustomSpacer(10)
 

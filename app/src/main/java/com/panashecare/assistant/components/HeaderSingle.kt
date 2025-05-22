@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.sp
 fun HeaderSingle(pageHeader: String) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .height(55.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,

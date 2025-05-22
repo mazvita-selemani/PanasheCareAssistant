@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -46,6 +47,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.R
 import com.panashecare.assistant.components.HeaderButtonPair
+import com.panashecare.assistant.components.HeaderSingle
+import com.panashecare.assistant.components.HelpIconWithDialog
+import com.panashecare.assistant.components.SystemButton
 import com.panashecare.assistant.model.objects.Medication
 import com.panashecare.assistant.model.objects.MedicationWithDosage
 import com.panashecare.assistant.model.objects.Prescription
@@ -152,17 +156,28 @@ fun SchedulePrescriptions(
 ) {
 
 
-    Column {
-        HeaderButtonPair(
-            pageHeader = "Schedule Prescriptions",
-            headerButton = "Confirm",
-            onNavigationClick = {
-                createPrescription()
-            }
-        )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(15.dp),
+    ) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderSingle("Schedule Prescriptions")
+
+            HelpIconWithDialog(helpMessage = "Use this page to schedule " +
+                    "medications that your patient will take on a daily basis. " +
+                    "You'll receive daily alerts when it's time to" +
+                    "administer the medication to your patient. \n \n" +
+                    "When you're ready tap 'Confirm' to save your schedule.")
+        }
 
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(500.dp, 650.dp)
                 .verticalScroll(rememberScrollState())
@@ -218,6 +233,20 @@ fun SchedulePrescriptions(
                 errors = errors
             )
 
+        }
+
+        CustomSpacer(30)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SystemButton(
+                buttonText = "Confirm",
+                onNavigationClick = {
+                    createPrescription()
+                }
+            )
         }
     }
 

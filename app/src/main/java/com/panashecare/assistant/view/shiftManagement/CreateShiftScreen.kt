@@ -1,10 +1,9 @@
 package com.panashecare.assistant.view.shiftManagement
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,15 +15,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,8 +28,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.panashecare.assistant.AppColors
 import com.panashecare.assistant.components.FormField
-import com.panashecare.assistant.components.HeaderButtonPair
+import com.panashecare.assistant.components.HeaderSingle
+import com.panashecare.assistant.components.HelpIconWithDialog
 import com.panashecare.assistant.components.ShiftTimePicker
+import com.panashecare.assistant.components.SystemButton
 import com.panashecare.assistant.model.objects.Shift
 import com.panashecare.assistant.model.objects.ShiftStatus
 import com.panashecare.assistant.model.objects.User
@@ -104,7 +101,7 @@ fun CreateNewShiftScreen(
         showEndTimePicker = viewModel::showEndTimePicker,
         createShift = {
             viewModel.createShift(shift)
-            if(viewModel.validateFields()) {
+            if (viewModel.validateFields()) {
                 navigateToHome()
             }
         },
@@ -152,9 +149,18 @@ fun CreateNewShift(
         verticalArrangement = Arrangement.Top
     ) {
 
-        HeaderButtonPair("New Shift", "Send Request",  { createShift() })
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderSingle("New Shift")
 
-        CustomSpacer(10)
+            HelpIconWithDialog(helpMessage = "Create a new shift by setting the time, date, and assigning a carer. " +
+                    "When you're finished, tap 'Send Request' and your chosen carer will be notified of a new shift.")
+        }
+
+        CustomSpacer(15)
 
         ShiftTimePicker(
             state = state,
@@ -169,7 +175,7 @@ fun CreateNewShift(
             updateChecked = updateChecked
         )
 
-        CustomSpacer(10)
+        CustomSpacer(30)
 
         Column(
             modifier = Modifier
@@ -233,42 +239,18 @@ fun CreateNewShift(
 
         }
 
-        CustomSpacer(10)
+        CustomSpacer(30)
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(color = appColors.surface, shape = RoundedCornerShape(size = 20.dp))
-                .padding(10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Notes",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight(500),
-                    color = appColors.formTextPrimary,
-                )
+            SystemButton(
+                buttonText = "Send Request",
+                onNavigationClick = {
+                    createShift()
+                }
             )
-
-            CustomSpacer(5)
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("(Optional)") },
-                modifier = Modifier
-                    .fillMaxHeight(0.8f)
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = appColors.formTextPrimary,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-
         }
     }
 }
