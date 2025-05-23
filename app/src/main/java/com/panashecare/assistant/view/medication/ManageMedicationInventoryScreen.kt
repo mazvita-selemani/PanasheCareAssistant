@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +34,7 @@ import com.panashecare.assistant.components.HeaderSingle
 import com.panashecare.assistant.components.InventoryCountCard
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.MedicationResult
+import com.panashecare.assistant.view.shiftManagement.CustomSpacer
 import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryViewModel
 import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,19 +71,12 @@ private fun ManageMedicationInventory(
 
     Column(
         modifier = modifier
-            .padding(15.dp)
+            .padding(15.dp).verticalScroll(rememberScrollState())
             .fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
         HeaderSingle("Manage your stock")
-
-        Text(
-            text = "Update your medication inventory here. Click update to\nconfirm your changes.",
-            style = TextStyle(
-                fontSize = 13.sp,
-            )
-        )
 
         Column(
             modifier = Modifier
@@ -133,6 +129,8 @@ private fun ManageMedicationInventory(
                 Text("Go Back", fontSize = 16.sp, fontWeight = FontWeight(400))
             }
 
+            CustomSpacer(15)
+
             TextButton(
                 onClick = {
                     navigateToCreateMedication()
@@ -142,7 +140,8 @@ private fun ManageMedicationInventory(
                     "Would you like to add a new medication to your system?",
                     color = appColors.primaryDark,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight(400)
+                    fontWeight = FontWeight(400),
+                    textAlign = TextAlign.Center
                 )
             }
         }

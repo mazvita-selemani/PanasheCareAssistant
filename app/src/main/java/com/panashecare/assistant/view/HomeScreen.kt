@@ -94,7 +94,7 @@ fun HomeScreen(
 
     Log.d("HomeScreen state in parent composable", "User: ${viewModel.state.user}")
 
-    Home(
+    HomeChild(
         modifier = modifier,
         navigateToProfile = navigateToProfile,
         user = viewModel.state.user ?: User(firstName = "Loading..."),
@@ -115,7 +115,7 @@ fun HomeScreen(
 
 
 @Composable
-fun Home(
+fun HomeChild(
     modifier: Modifier = Modifier,
     user: User,
     navigateToProfile: () -> Unit,

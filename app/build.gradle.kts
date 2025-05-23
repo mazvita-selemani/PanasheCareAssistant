@@ -89,4 +89,15 @@ dependencies {
     implementation(libs.converter.scalars)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.work.runtime.ktx)
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    androidTestImplementation( "io.mockk:mockk-android:1.13.5") // latest version
+    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+
 }
