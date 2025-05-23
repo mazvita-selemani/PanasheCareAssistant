@@ -196,7 +196,7 @@ class DailyMedicationTrackerViewModel(
                 if (intake.wasTaken == true) {
                     val med = medicationMap.value[intake.medicationId]
                     val newStock = (med?.totalInStock ?: 1) - 1
-                    medicationRepository.updateMedication(
+                    medicationRepository.updateMedicationCount(
                         medicationId = intake.medicationId ?: return@forEach,
                         newInventoryLevel = newStock
                     ) { success ->
@@ -233,7 +233,7 @@ class DailyMedicationTrackerViewModel(
         if (wasTaken) {
             val medication = medicationMap.value[medicationId]
             val newInventory = (medication?.totalInStock ?: 1) - 1
-            medicationRepository.updateMedication(
+            medicationRepository.updateMedicationCount(
                 medicationId = medicationId,
                 newInventoryLevel = newInventory
             ) { success ->

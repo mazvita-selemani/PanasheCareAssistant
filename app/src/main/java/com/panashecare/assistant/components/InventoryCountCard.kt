@@ -91,7 +91,7 @@ fun InventoryCountCard(modifier: Modifier = Modifier, medication: Medication) {
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // Pushes the second column to the end
+            Spacer(modifier = Modifier.weight(1f))
 
             // Right Column
             Column(horizontalAlignment = Alignment.End) {
@@ -109,42 +109,6 @@ fun InventoryCountCard(modifier: Modifier = Modifier, medication: Medication) {
             }
         }
 
-        // Hanging Buttons
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 25.dp, bottom = 10.dp)
-                .offset(y = 10.dp), // Hang it *outside* the card
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .width(100.dp)
-                    .height(35.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray,
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues(5.dp)
-            ) {
-                Text(text = "Edit")
-            }
-
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .width(100.dp)
-                    .height(35.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray,
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues(5.dp)
-            ) {
-                Text(text = "Delete")
-            }
-        }
     }
 }
 

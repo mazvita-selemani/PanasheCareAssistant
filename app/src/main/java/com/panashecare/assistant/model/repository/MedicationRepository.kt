@@ -63,12 +63,7 @@ class MedicationRepository(
         Log.d("Register", "created Medication successfully")
     }
 
-    // todo update and delete functions
-
-    // update inventory for this medication
-    fun updateMedication(medicationId: String, newInventoryLevel: Int, onComplete: (Boolean) -> Unit) {
-        Log.d("Stock", "MedicationId: $medicationId")
-        Log.d("Stock", "Total In stock: $newInventoryLevel")
+    fun updateMedicationCount(medicationId: String, newInventoryLevel: Int, onComplete: (Boolean) -> Unit) {
         database.child(medicationId).child("totalInStock").setValue(newInventoryLevel)
             .addOnCompleteListener { task ->
                 onComplete(task.isSuccessful)

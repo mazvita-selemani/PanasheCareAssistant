@@ -32,6 +32,9 @@
       <SelectionState runConfigName="PreviewTracker">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="PreviewSchedulePrescriptions">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>
