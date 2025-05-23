@@ -158,7 +158,7 @@ fun SchedulePrescriptions(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize().verticalScroll(rememberScrollState())
             .padding(15.dp),
     ) {
 

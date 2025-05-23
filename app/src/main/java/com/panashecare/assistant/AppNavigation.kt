@@ -24,6 +24,7 @@ import com.panashecare.assistant.view.ProfileDetailsScreen
 import com.panashecare.assistant.view.authentication.ForgotPasswordScreen
 import com.panashecare.assistant.view.authentication.LoginScreen
 import com.panashecare.assistant.view.authentication.RegisterScreen
+import com.panashecare.assistant.view.medication.CreateMedicationScreen
 import com.panashecare.assistant.view.medication.DailyMedicationTrackerScreen
 import com.panashecare.assistant.view.medication.ManageMedicationInventoryScreen
 import com.panashecare.assistant.view.medication.SchedulePrescriptionsScreen
@@ -78,6 +79,9 @@ data class DailyMedicationTracker(val userId: String? = null)
 
 @Serializable
 data class StockManagement(val userId: String? = null)
+
+@Serializable
+data class CreateMedication(val userId: String? = null)
 
 @Composable
 fun AppNavigation(
@@ -279,7 +283,8 @@ fun AppNavigation(
                     prescriptionRepository = prescriptionRepository,
                     dailyMedicationLogRepository = dailyMedicationLogRepository,
                     navigateToStockManagement = { navController.navigate(StockManagement(userId = userId)) },
-                    userRepository = userRepository
+                    userRepository = userRepository,
+                    navigateToCreatePrescriptionScheduleScreen = { navController.navigate(SchedulePrescriptions(userId = userId)) }
                 )
             }
         }
@@ -290,7 +295,18 @@ fun AppNavigation(
             ManageMedicationInventoryScreen(
                 modifier = modifier,
                 medicationRepository = medicationRepository,
-                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) }
+                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) },
+                navigateToCreateMedication = { navController.navigate(CreateMedication(userId = userId)) }
+            )
+        }
+
+        composable<CreateMedication> { backStackEntry ->
+            val createMedication: CreateMedication = backStackEntry.toRoute()
+            val userId = createMedication.userId
+            CreateMedicationScreen(
+                modifier = modifier,
+                medicationRepository = medicationRepository,
+                navigateToMedicationInventory = { navController.navigate(StockManagement(userId = userId)) }
             )
         }
 

@@ -4,8 +4,6 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -33,13 +32,17 @@ import com.panashecare.assistant.components.HeaderSingle
 import com.panashecare.assistant.components.InventoryCountCard
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.MedicationResult
-import com.panashecare.assistant.viewModel.medication.ManageInventoryState
 import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryViewModel
 import com.panashecare.assistant.viewModel.medication.ManageMedicationInventoryViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun ManageMedicationInventoryScreen(modifier: Modifier, medicationRepository: MedicationRepository, navigateToDailyMedicationTracker: () -> Unit) {
+fun ManageMedicationInventoryScreen(
+    modifier: Modifier,
+    medicationRepository: MedicationRepository,
+    navigateToDailyMedicationTracker: () -> Unit,
+    navigateToCreateMedication: () -> Unit
+) {
 
     val viewModel = viewModel<ManageMedicationInventoryViewModel>(
         factory = ManageMedicationInventoryViewModelFactory(medicationRepository = medicationRepository)
@@ -47,9 +50,9 @@ fun ManageMedicationInventoryScreen(modifier: Modifier, medicationRepository: Me
 
     ManageMedicationInventory(
         modifier = modifier,
-        state = viewModel.state,
         result = viewModel.medicationList,
-        navigateToDailyMedicationTracker = navigateToDailyMedicationTracker
+        navigateToDailyMedicationTracker = navigateToDailyMedicationTracker,
+        navigateToCreateMedication = navigateToCreateMedication
     )
 }
 
@@ -57,7 +60,7 @@ fun ManageMedicationInventoryScreen(modifier: Modifier, medicationRepository: Me
 private fun ManageMedicationInventory(
     modifier: Modifier = Modifier,
     navigateToDailyMedicationTracker: () -> Unit,
-    state: ManageInventoryState,
+    navigateToCreateMedication: () -> Unit,
     result: MutableStateFlow<MedicationResult>
 ) {
 
@@ -108,38 +111,15 @@ private fun ManageMedicationInventory(
         }
 
 
-
-        Row(
+        Column(
             modifier = Modifier
-                .align(Alignment.End)
-                .padding(5.dp)
+                .padding(5.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = {
-                    //  navigateToStockManagement() // check for changes otherwise remain disabled
-                },
-                modifier = Modifier
-                    .width(100.dp)
-                    .height(45.dp),
-                shape = RoundedCornerShape(size = 47.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = appColors.primaryDark,
-                    contentColor = Color.White
-                )
-            ) {
-                Text("Add", fontSize = 16.sp, fontWeight = FontWeight(400))
-            }
-        }
-
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(5.dp)
-        ) {
-            Button(
-                onClick = {
-                      navigateToDailyMedicationTracker() // check for changes otherwise remain disabled
+                    navigateToDailyMedicationTracker()
                 },
                 modifier = Modifier
                     .width(190.dp)
@@ -150,7 +130,20 @@ private fun ManageMedicationInventory(
                     contentColor = Color.White
                 )
             ) {
-                Text("Update", fontSize = 16.sp, fontWeight = FontWeight(400))
+                Text("Go Back", fontSize = 16.sp, fontWeight = FontWeight(400))
+            }
+
+            TextButton(
+                onClick = {
+                    navigateToCreateMedication()
+                }
+            ) {
+                Text(
+                    "Would you like to add a new medication to your system?",
+                    color = appColors.primaryDark,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(400)
+                )
             }
         }
 
@@ -160,5 +153,5 @@ private fun ManageMedicationInventory(
 @Preview
 @Composable
 fun PreviewManageInventory() {
-   ManageMedicationInventoryScreen(Modifier, MedicationRepository(), {})
+    ManageMedicationInventoryScreen(Modifier, MedicationRepository(), {}, {})
 }

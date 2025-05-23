@@ -55,9 +55,7 @@ class DailyMedicationTrackerViewModel(
         MutableStateFlow<PrescriptionResult>(PrescriptionResult.Loading)
     private val helper = TimeSerialisationHelper()
 
-    private val medication = MutableStateFlow<Medication?>(null)
     private val medicationMap = mutableStateOf<Map<String, Medication>>(emptyMap())
-    private var medicationList = MutableStateFlow<MedicationResult>(MedicationResult.Loading)
 
     init {
         // set current time of day state
@@ -198,7 +196,7 @@ class DailyMedicationTrackerViewModel(
                 if (intake.wasTaken == true) {
                     val med = medicationMap.value[intake.medicationId]
                     val newStock = (med?.totalInStock ?: 1) - 1
-                    medicationRepository.updateMedication(
+                    medicationRepository.updateMedicationCount(
                         medicationId = intake.medicationId ?: return@forEach,
                         newInventoryLevel = newStock
                     ) { success ->
@@ -235,7 +233,7 @@ class DailyMedicationTrackerViewModel(
         if (wasTaken) {
             val medication = medicationMap.value[medicationId]
             val newInventory = (medication?.totalInStock ?: 1) - 1
-            medicationRepository.updateMedication(
+            medicationRepository.updateMedicationCount(
                 medicationId = medicationId,
                 newInventoryLevel = newInventory
             ) { success ->

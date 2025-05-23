@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +60,8 @@ fun DailyMedicationTrackerScreen(
     medicationRepository: MedicationRepository,
     userRepository: UserRepository,
     userId: String,
-    navigateToStockManagement: () -> Unit
+    navigateToStockManagement: () -> Unit,
+    navigateToCreatePrescriptionScheduleScreen: () -> Unit
 ) {
 
     val viewModel = viewModel<DailyMedicationTrackerViewModel>(
@@ -83,7 +86,8 @@ fun DailyMedicationTrackerScreen(
         onSubmitLog = viewModel::confirmMedicationIntake,
         getMedicationById = { id -> viewModel.getMedicationById(id) },
         navigateToStockManagement = navigateToStockManagement,
-        user = viewModel.user.value ?: User(firstName = "Loading...")
+        user = viewModel.user.value ?: User(firstName = "Loading..."),
+        navigateToCreatePrescriptionScheduleScreen = navigateToCreatePrescriptionScheduleScreen
     )
 
 }
@@ -101,7 +105,8 @@ fun DailyMedicationTracker(
     onEveningFirstCheckedChange: (Boolean) -> Unit,
     onEveningSecondCheckedChange: (Boolean) -> Unit,
     getMedicationById: (String) -> Medication?,
-    navigateToStockManagement: () -> Unit
+    navigateToStockManagement: () -> Unit,
+    navigateToCreatePrescriptionScheduleScreen: () -> Unit
 
 ) {
 
@@ -182,71 +187,96 @@ fun DailyMedicationTracker(
             })
 
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Text("Morning ${state.prescriptions?.morningTime}", fontSize = 20.sp)
-            }
-            if (state.prescriptions?.morningMedication?.isNotEmpty() == true) {
-                itemsIndexed(state.prescriptions.morningMedication) { index, _ ->
-                    MedicationDetailsCard(
-                        medicalList = state.prescriptions.morningMedication,
-                        isChecked = if (index == 0 && isMorningEnabled) state.isMorningFirstChecked else state.isMorningSecondChecked,
-                        onCheckedChange = if (index == 0 && isMorningEnabled) onMorningFirstCheckedChange else onMorningSecondCheckedChange,
-                        index = index,
-                        getMedicationById = getMedicationById,
-                        enabled = isMorningEnabled
-                    )
-                }
-            } else {
+        if(state.prescriptions != null) {
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 item {
-                    Text("No prescriptions listed")
+                    Text("Morning ${state.prescriptions?.morningTime}", fontSize = 20.sp)
+                }
+                if (state.prescriptions?.morningMedication?.isNotEmpty() == true) {
+                    itemsIndexed(state.prescriptions.morningMedication) { index, _ ->
+                        MedicationDetailsCard(
+                            medicalList = state.prescriptions.morningMedication,
+                            isChecked = if (index == 0 && isMorningEnabled) state.isMorningFirstChecked else state.isMorningSecondChecked,
+                            onCheckedChange = if (index == 0 && isMorningEnabled) onMorningFirstCheckedChange else onMorningSecondCheckedChange,
+                            index = index,
+                            getMedicationById = getMedicationById,
+                            enabled = isMorningEnabled
+                        )
+                    }
+                } else {
+                    item {
+                        Text("No prescriptions listed")
+                    }
+                }
+
+                item {
+                    Text("Afternoon ${state.prescriptions?.afternoonTime}", fontSize = 20.sp)
+                }
+                if (state.prescriptions?.afternoonMedication?.isNotEmpty() == true) {
+                    itemsIndexed(state.prescriptions.afternoonMedication) { index, _ ->
+                        MedicationDetailsCard(
+                            medicalList = state.prescriptions.afternoonMedication,
+                            isChecked = if (index == 0 && isAfternoonEnabled) state.isAfternoonFirstChecked else state.isAfternoonSecondChecked,
+                            onCheckedChange = if (index == 0 && isAfternoonEnabled) onAfternoonFirstCheckedChange else onAfternoonSecondCheckedChange,
+                            index = index,
+                            getMedicationById = getMedicationById,
+                            enabled = isAfternoonEnabled
+                        )
+                    }
+                } else {
+                    item {
+                        Text("No prescriptions listed")
+                    }
+                }
+
+                item {
+                    Text("Night ${state.prescriptions?.eveningTime}", fontSize = 20.sp)
+                }
+                if (state.prescriptions?.eveningMedication?.isNotEmpty() == true) {
+                    itemsIndexed(state.prescriptions.eveningMedication) { index, _ ->
+                        MedicationDetailsCard(
+                            medicalList = state.prescriptions.eveningMedication,
+                            isChecked = if (index == 0 && isEveningEnabled) state.isEveningFirstChecked else state.isEveningSecondChecked,
+                            onCheckedChange = if (index == 0 && isEveningEnabled) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
+                            index = index,
+                            getMedicationById = getMedicationById,
+                            enabled = isEveningEnabled
+                        )
+                    }
+                } else {
+                    item {
+                        Text("No prescriptions listed")
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "It doesn't seem like you've set a prescription schedule in your system",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                TextButton(onClick = { navigateToCreatePrescriptionScheduleScreen() }) {
+                    Text(
+                        text = "Click here to set a Schedule",
+                        fontSize = 18.sp
+                    )
                 }
             }
 
-            item {
-                Text("Afternoon ${state.prescriptions?.afternoonTime}", fontSize = 20.sp)
-            }
-            if (state.prescriptions?.afternoonMedication?.isNotEmpty() == true) {
-                itemsIndexed(state.prescriptions.afternoonMedication) { index, _ ->
-                    MedicationDetailsCard(
-                        medicalList = state.prescriptions.afternoonMedication,
-                        isChecked = if (index == 0 && isAfternoonEnabled) state.isAfternoonFirstChecked else state.isAfternoonSecondChecked,
-                        onCheckedChange = if (index == 0 && isAfternoonEnabled) onAfternoonFirstCheckedChange else onAfternoonSecondCheckedChange,
-                        index = index,
-                        getMedicationById = getMedicationById,
-                        enabled = isAfternoonEnabled
-                    )
-                }
-            } else {
-                item {
-                    Text("No prescriptions listed")
-                }
-            }
-
-            item {
-                Text("Night ${state.prescriptions?.eveningTime}", fontSize = 20.sp)
-            }
-            if (state.prescriptions?.eveningMedication?.isNotEmpty() == true) {
-                itemsIndexed(state.prescriptions.eveningMedication) { index, _ ->
-                    MedicationDetailsCard(
-                        medicalList = state.prescriptions.eveningMedication,
-                        isChecked = if (index == 0 && isEveningEnabled) state.isEveningFirstChecked else state.isEveningSecondChecked,
-                        onCheckedChange = if (index == 0 && isEveningEnabled) onEveningFirstCheckedChange else onEveningSecondCheckedChange,
-                        index = index,
-                        getMedicationById = getMedicationById,
-                        enabled = isEveningEnabled
-                    )
-                }
-            } else {
-                item {
-                    Text("No prescriptions listed")
-                }
-            }
         }
 
     }
@@ -262,6 +292,7 @@ fun PreviewTracker() {
         MedicationRepository(),
         userId = "3",
         navigateToStockManagement = { },
-        userRepository = UserRepository()
+        userRepository = UserRepository(),
+        navigateToCreatePrescriptionScheduleScreen = { }
     )
 }
