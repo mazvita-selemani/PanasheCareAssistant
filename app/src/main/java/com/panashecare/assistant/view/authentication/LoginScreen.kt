@@ -60,44 +60,59 @@ fun LoginScreen(
     val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
+        Log.d("LoginScreen", "Auth State: ${authState.value}")
 
-        when (authState.value) {
+        when (val state = authState.value) {
             is AuthState.Authenticated -> {
-                onAuthenticated()
-                    authViewModel.currentUser?.email?.let {
-                        repository.getCustomUserIdByEmail(it) { customUserId ->
-                            Log.d("LoginScreen", "Custom User ID: $customUserId")
-                            if (customUserId != null) {
-                                // Optionally set this to your session ViewModel
-                                userSessionViewModel.setUserId(customUserId)
+                val email = authViewModel.currentUser?.email
 
-                                // Use the custom userId to fetch the full user object
-                                viewModel.getUserAfterLogin(it) { user ->
-                                    Log.d("LoginScreen", "User: $user")
+                if (email != null) {
+                    Log.d("Current user", "Email: $email")
 
-                                    user?.let {
-                                        subscribeUserToShiftNotifications(user)
-                                        subscribeUserToVitalLogNotifications()
-                                        // viewModel.scheduleMedicationNotifications(prescriptionId, context)
-                                    } ?: Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+                    repository.getCustomUserIdByEmail(email) { customUserId ->
+                        Log.d("LoginScreen", "Custom User ID: $customUserId")
+
+                        if (customUserId != null) {
+                            userSessionViewModel.setUserId(customUserId)
+
+                            viewModel.getUserAfterLogin(email) { user ->
+                                if (user != null) {
+                                    subscribeUserToShiftNotifications(user)
+                                    subscribeUserToVitalLogNotifications()
+                                    prescriptionRepository.getFirstPrescriptionId { prescriptionId ->
+                                        if (prescriptionId != null) {
+                                            Log.d("PrescriptionID", "First prescription ID: $prescriptionId")
+                                            viewModel.scheduleMedicationNotifications(prescriptionId, context)
+
+                                        } else {
+                                            Log.d("PrescriptionID", "No prescriptions found or error occurred")
+                                        }
+                                    }
+
+                                } else {
+                                    Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
                                 }
-                            } else {
-                                Toast.makeText(context, "Failed to get user ID from email", Toast.LENGTH_SHORT).show()
                             }
+
+                            onAuthenticated()
+                        } else {
+                            Toast.makeText(context, "Failed to get user ID from email", Toast.LENGTH_SHORT).show()
                         }
                     }
-
+                } else {
+                    Toast.makeText(context, "No email found for current user", Toast.LENGTH_SHORT).show()
+                }
             }
 
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState.value as AuthState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
+            is AuthState.Error -> {
+                Log.d("LoginScreen", "Login error")
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
 
-            else -> Unit
+            else -> {
+                Log.d("LoginScreen", "Auth state unchanged or loading")
+            }
         }
-
     }
 
     val buttonModifier = modifier
@@ -131,7 +146,8 @@ fun LoginScreen(
             onChange = viewModel::onPasswordChange,
             label = "Password",
             placeholder = "Enter your password",
-            modifier = modifier
+            modifier = modifier,
+            password = true
         )
 
         Spacer(modifier = Modifier.height(15.dp))
@@ -168,9 +184,12 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        TextButton(onClick = onNavigateToForgotPassword) { Text("Forgot password?") }
+        TextButton(onClick = onNavigateToForgotPassword) {
+            Text("Forgot password?")
+        }
     }
 }
+
 
 fun subscribeUserToShiftNotifications(user:User) {
     FirebaseMessaging.getInstance().subscribeToTopic("${user.id}")

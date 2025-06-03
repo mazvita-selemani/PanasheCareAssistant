@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +32,8 @@ fun FormField(
     error: String? = null,
     horizontalPadding: Int = 32,
     trailingIcon: @Composable (() -> Unit)? = null,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    password: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding.dp)) {
         OutlinedTextField(
@@ -38,6 +41,7 @@ fun FormField(
             onValueChange = onChange,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = AppColors().formTextPrimary,
                 focusedContainerColor = Color.White,

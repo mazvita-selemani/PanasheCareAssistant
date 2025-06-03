@@ -1,18 +1,17 @@
 package com.panashecare.assistant
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.panashecare.assistant.model.objects.User
 import com.panashecare.assistant.model.repository.DailyMedicationLogRepository
 import com.panashecare.assistant.model.repository.MedicationRepository
 import com.panashecare.assistant.model.repository.PrescriptionRepository
@@ -128,14 +127,30 @@ fun AppNavigation(
         }
 
         composable<Profile> {
-            val userId = userSessionViewModel.userId!!
-            ProfileDetailsScreen(
-            modifier = modifier,
-            authViewModel = authViewModel,
-            navigateToLogin = { navController.navigate(Login) },
-            userRepository = userRepository,
-                userId = userId
-        ) }
+            val userId = userSessionViewModel.userId
+
+            if (userId != null) {
+                ProfileDetailsScreen(
+                    modifier = modifier,
+                    authViewModel = authViewModel,
+                    navigateToLogin = {
+                        userSessionViewModel.clearUserId()
+                        navController.navigate(Login) {
+                            popUpTo(Login) { inclusive = true }
+                        }
+                    },
+                    userRepository = userRepository,
+                    userId = userId
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Login) {
+                        popUpTo(Login) { inclusive = true }
+                    }
+                }
+            }
+        }
+
 
         composable<Home> { backStackEntry ->
             val home: Home = backStackEntry.toRoute()
@@ -146,7 +161,6 @@ fun AppNavigation(
                     userSessionViewModel.setUserId(userId)
                 }
 
-                // Proceed with the rest of your logic using userId
                 HomeScreen(
                     navigateToProfile = { navController.navigate(Profile(userId = userId)) },
                     repository = shiftRepository,
@@ -155,10 +169,20 @@ fun AppNavigation(
                     modifier = modifier,
                     userId = userId,
                     navigateToSingleViewForPastShift = { shift ->
-                        navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                        navController.navigate(
+                            SingleShiftView(
+                                shiftId = shift.id!!,
+                                userId = userId
+                            )
+                        )
                     },
                     navigateToSingleViewForFutureShift = { shift ->
-                        navController.navigate(SingleShiftView(shiftId = shift.id!!, userId = userId))
+                        navController.navigate(
+                            SingleShiftView(
+                                shiftId = shift.id!!,
+                                userId = userId
+                            )
+                        )
                     },
                     userRepository = userRepository
                 )
@@ -195,7 +219,7 @@ fun AppNavigation(
             )
         }
 
-        composable<SingleShiftView>{ backStackEntry ->
+        composable<SingleShiftView> { backStackEntry ->
             val singleShiftView: SingleShiftView = backStackEntry.toRoute()
             val shiftId = singleShiftView.shiftId
             val userId = singleShiftView.userId
@@ -213,7 +237,7 @@ fun AppNavigation(
 
         }
 
-        composable<UpdateShift>{ backStackEntry ->
+        composable<UpdateShift> { backStackEntry ->
             val updateShift: UpdateShift = backStackEntry.toRoute()
             val shiftId = updateShift.shiftId
             val userId = updateShift.userId
@@ -222,7 +246,14 @@ fun AppNavigation(
                 shiftId = shiftId ?: "",
                 shiftRepository = shiftRepository,
                 userRepository = userRepository,
-                navigateToSingleShiftView = { navController.navigate(SingleShiftView(shiftId = shiftId, userId = userId)) }
+                navigateToSingleShiftView = {
+                    navController.navigate(
+                        SingleShiftView(
+                            shiftId = shiftId,
+                            userId = userId
+                        )
+                    )
+                }
             )
 
         }
@@ -264,7 +295,11 @@ fun AppNavigation(
                     modifier = modifier,
                     prescriptionRepository = prescriptionRepository,
                     medicationRepository = medicationRepository,
-                    navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) }
+                    navigateToDailyMedicationTracker = {
+                        navController.navigate(
+                            DailyMedicationTracker(userId = userId)
+                        )
+                    }
                 )
             }
         }
@@ -284,7 +319,11 @@ fun AppNavigation(
                     dailyMedicationLogRepository = dailyMedicationLogRepository,
                     navigateToStockManagement = { navController.navigate(StockManagement(userId = userId)) },
                     userRepository = userRepository,
-                    navigateToCreatePrescriptionScheduleScreen = { navController.navigate(SchedulePrescriptions(userId = userId)) }
+                    navigateToCreatePrescriptionScheduleScreen = {
+                        navController.navigate(
+                            SchedulePrescriptions(userId = userId)
+                        )
+                    }
                 )
             }
         }
@@ -295,7 +334,13 @@ fun AppNavigation(
             ManageMedicationInventoryScreen(
                 modifier = modifier,
                 medicationRepository = medicationRepository,
-                navigateToDailyMedicationTracker = { navController.navigate(DailyMedicationTracker(userId = userId)) },
+                navigateToDailyMedicationTracker = {
+                    navController.navigate(
+                        DailyMedicationTracker(
+                            userId = userId
+                        )
+                    )
+                },
                 navigateToCreateMedication = { navController.navigate(CreateMedication(userId = userId)) }
             )
         }

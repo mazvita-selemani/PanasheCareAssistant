@@ -78,6 +78,23 @@ class PrescriptionRepository(
         awaitClose { database.removeEventListener(listener) }
     }
 
+    fun getFirstPrescriptionId(onResult: (String?) -> Unit) {
+        database.orderByKey().limitToFirst(1)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val firstChild = snapshot.children.firstOrNull()
+                    val firstKey = firstChild?.key
+                    onResult(firstKey) // Pass the key back via callback
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error getting first prescription ID: ${error.message}")
+                    onResult(null)
+                }
+            })
+    }
+
+
 
     // update inventory for this medication
     fun updatePrescriptionMedication(prescriptionId: String, timeOfMedication: String, index: Int, newInventoryLevel: Int, onComplete: (Boolean) -> Unit) {

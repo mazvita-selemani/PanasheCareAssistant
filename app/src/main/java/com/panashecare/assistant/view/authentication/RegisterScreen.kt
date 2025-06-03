@@ -1,5 +1,6 @@
 package com.panashecare.assistant.view.authentication
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -85,7 +86,16 @@ fun RegisterScreen(
         onAdminChecked = viewModel::onAdminCheckedChange,
         onPasswordChange = viewModel::onPasswordChange,
         onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        saveUser = { if(viewModel.validateFields()) viewModel.registerNewUser(user) },
+        saveUser = {
+            val isValid = viewModel.validateFields()
+            Log.d("Register Message", "Validating fields: $isValid")
+            if (isValid) {
+                viewModel.registerNewUser(user)
+                 true
+            } else {
+                false
+            }
+        },
         isDropDownMenuExpanded = viewModel.state.isDropDownMenuExpanded,
         updateIsDropDownExpanded = viewModel::updateIsDropDownExpanded,
         selectedGender = viewModel.state.selectedGender,
@@ -100,7 +110,7 @@ fun Register(
     authViewModel: AuthViewModel,
     onAuthenticated: () -> Unit,
     state: RegisterUiState,
-    saveUser: () -> Unit,
+    saveUser: () ->Boolean,
     isDropDownMenuExpanded: Boolean,
     updateIsDropDownExpanded: (Boolean) -> Unit,
     selectedGender: String,
@@ -266,33 +276,32 @@ fun Register(
                 with(density) { -40.dp.roundToPx() }
             } + expandVertically(
                 expandFrom = Alignment.Top
-            ) + fadeIn(
-                initialAlpha = 0.3f
-            ),
+            ) + fadeIn(initialAlpha = 0.3f),
             exit = slideOutVertically() + shrinkVertically() + fadeOut()
         ) {
+            Column {
+                Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(10.dp))
+                FormField(
+                    value = state.patientFirstName,
+                    onChange = { onPatientFirstNameChange(it) },
+                    label = "Patient first name",
+                    placeholder = "Patient first name",
+                    modifier = modifier,
+                    error = state.errors["patientFirstName"]
+                )
 
-            FormField(
-                value = state.patientFirstName,
-                onChange = { onPatientFirstNameChange(it) },
-                label = "Patient last name",
-                placeholder = "Patient last name",
-                modifier = modifier,
-                error = state.errors["patientFirstName"]
-            )
+                Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            FormField(
-                value = state.patientLastName,
-                onChange = { onPatientLastNameChange(it) },
-                label = "Patient last name",
-                placeholder = "Patient last name",
-                modifier = modifier,
-                error = state.errors["patientLastName"]
-            )
+                FormField(
+                    value = state.patientLastName,
+                    onChange = { onPatientLastNameChange(it) },
+                    label = "Patient last name",
+                    placeholder = "Patient last name",
+                    modifier = modifier,
+                    error = state.errors["patientLastName"]
+                )
+            }
         }
 
 
@@ -304,7 +313,8 @@ fun Register(
             label = "Password",
             placeholder = "Enter your password",
             modifier = modifier,
-            error = state.errors["password"]
+            error = state.errors["password"],
+            password = true
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -315,7 +325,8 @@ fun Register(
             label = "Confirm Password",
             placeholder = "Confirm your password",
             modifier = modifier,
-            error = state.errors["confirmPassword"]
+            error = state.errors["confirmPassword"],
+            password = true
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -324,8 +335,12 @@ fun Register(
 
         Button(
             onClick = {
-                saveUser.invoke()
-                authViewModel.signUp(state.email, state.password)
+                Log.d("Register Button", "Clicked. Validating fields...")
+                if (saveUser()) { // Modify saveUser to return Boolean
+                    authViewModel.signUp(state.email, state.password)
+                } else {
+                    Log.d("Register Button", "Validation failed. User not saved or signed up.")
+                }
             },
             modifier = buttonModifier,
             colors = ButtonColors(
@@ -339,20 +354,6 @@ fun Register(
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        // TODO
-        Button(
-            onClick = {},
-            modifier = buttonModifier,
-            colors = ButtonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White,
-                disabledContainerColor = Color.Gray,
-                disabledContentColor = Color.Black
-            )
-        ) {
-            Text(text = "Sign In with Google")
-        }
 
     }
 }

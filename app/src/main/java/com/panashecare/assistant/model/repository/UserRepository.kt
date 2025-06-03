@@ -132,13 +132,27 @@ class UserRepository(
         val image = UserProfileImages().getRandomImageForGender(user.gender ?: Gender.OTHER)
         val mUser = user.copy(id = userId, profileImageRef = image)
 
-        database.child(mUser.id.toString()).setValue(mUser.toJson())
+        if (userId == null) {
+            Log.e("Register Message", "Failed to generate user ID")
+            onComplete(false)
+            return
+        }
+
+        database.child(userId).setValue(mUser.toJson())
             .addOnCompleteListener { task ->
-                Log.d("Register", "saved user successfully")
+                if (task.isSuccessful) {
+                    Log.d("Register Message", "User saved successfully with ID: $userId")
+                } else {
+                    Log.e("Register Message", "User save task failed: ${task.exception?.message}")
+                }
                 onComplete(task.isSuccessful)
             }
-
+            .addOnFailureListener { exception ->
+                Log.e("Register Message", "Failed to save user: ${exception.message}", exception)
+                onComplete(false)
+            }
     }
+
 
     fun deleteUser(id: String) {
         database.child(id).removeValue()

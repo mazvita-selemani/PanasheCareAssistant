@@ -29,7 +29,7 @@ class LoginViewModel(private val repository: UserRepository, private val prescri
         viewModelScope.launch {
             prescriptionRepository.observePrescriptions(prescriptionId).collect { times ->
                 times.forEach { time ->
-                    val message = "Good morning, don't forget to give the patient the medication at $time"
+                    val message = "Hi, don't forget to give the patient the medication at $time"
                     scheduleNotificationAt(time, context, message)
                 }
             }
